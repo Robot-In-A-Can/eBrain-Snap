@@ -21,7 +21,8 @@
     <div id="header">
         <span class="connState"></span>
         <div id="save"></div>
-        <h1 class="title"><a href="http://www.robotinacan.com/"><img src="assets/logo_sm.png" alt="EveOne Apps" /></a></h1>
+        <div onClick = "instructionClick();"><h1 class="title"><img src="assets/logo_sm.png" alt="Robot In A Can Snap!" /></h1></div>
+        <div id="instructions"><iframe id="instructionsframe" src="instructions.html"></iframe></div>
     </div>
     <div id="app">
         <script type="text/javascript" src="assets/apps/snap/src/morphic.js"></script>
@@ -49,6 +50,26 @@
         <script type="text/javascript">
         var evebrain;
         var world;
+        var openclose = 0;
+
+        instructionClick = function(){
+            openclose += 1;
+            if (openclose % 2 == 0) {
+                document.getElementById('header').style.height = '56px';
+                document.getElementById('instructions').style.visibility = 'hidden';
+                document.getElementById('instructions').style.height = '0';
+                document.getElementById('instructionsframe').style.visibility = 'hidden';
+                document.getElementById('instructionsframe').style.height = '0';
+            } else {
+                document.getElementById('header').style.height = '80%';
+                document.getElementById('instructions').style.visibility = 'visible';
+                document.getElementById('instructions').style.height = '100%';
+                document.getElementById('instructionsframe').style.visibility = 'visible';
+                document.getElementById('instructionsframe').style.height = '100%';
+            }
+            console.log(openclose);
+            
+        }
 
         window.location = '#m=' + '192.168.4.1';
 
