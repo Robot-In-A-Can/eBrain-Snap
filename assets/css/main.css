@@ -10,16 +10,13 @@ html, body{
   position:fixed;
   top:0;
   width:100%;
-  background:#353535;
+  background:rgb(14,29,59);
   padding:0;
-  -webkit-box-shadow: 0 0 12px 0  rgba(0,0,0,0.4);
-  -moz-box-shadow: 0 0 12px 0  rgba(0,0,0,0.4);
-  box-shadow: 0 0 12px 0 rgba(0,0,0,0.4);
   z-index: 10000;
 }
 
 #header img{
-  margin:0px 0 0 10px;
+  margin:5px 0 0 10px;
   max-width:80%;
 }
 
@@ -41,8 +38,12 @@ html, body{
   padding:0px;
 }
 
-#home{
+#world {
   margin-top: 75px;
+}
+
+#home{
+  margin-top: 0px;
   padding:10px;
   background-color:#FAFAFA;
   z-index: 1;
@@ -72,12 +73,12 @@ html, body{
   display:block;
   width:244px;
   height:150px;
--webkit-border-top-left-radius: 10px;
--webkit-border-top-right-radius: 10px;
--moz-border-radius-topleft: 10px;
--moz-border-radius-topright: 10px;
-border-top-left-radius: 10px;
-border-top-right-radius: 10px;
+  -webkit-border-top-left-radius: 10px;
+  -webkit-border-top-right-radius: 10px;
+  -moz-border-radius-topleft: 10px;
+  -moz-border-radius-topright: 10px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
 #home .apps li a{

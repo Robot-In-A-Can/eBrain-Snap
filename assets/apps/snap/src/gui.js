@@ -144,7 +144,7 @@ IDE_Morph.prototype.setDefaultDesign = function () {
 
 IDE_Morph.prototype.setFlatDesign = function () {
     MorphicPreferences.isFlat = true;
-    SpriteMorph.prototype.paletteColor = new Color(255, 255, 255);
+    SpriteMorph.prototype.paletteColor = new Color(225, 225, 228); // block pallete background
     SpriteMorph.prototype.paletteTextColor = new Color(70, 70, 70);
     StageMorph.prototype.paletteTextColor
         = SpriteMorph.prototype.paletteTextColor;
@@ -155,9 +155,9 @@ IDE_Morph.prototype.setFlatDesign = function () {
     IDE_Morph.prototype.backgroundColor = new Color(200, 200, 200);
     IDE_Morph.prototype.frameColor = new Color(255, 255, 255);
 
-    IDE_Morph.prototype.groupColor = new Color(230, 230, 230);
+    IDE_Morph.prototype.groupColor = new Color(236, 236, 240); // palatte
     IDE_Morph.prototype.sliderColor = SpriteMorph.prototype.sliderColor;
-    IDE_Morph.prototype.buttonLabelColor = new Color(70, 70, 70);
+    IDE_Morph.prototype.buttonLabelColor = new Color(40, 40, 40); //text color
     IDE_Morph.prototype.tabColors = [
         IDE_Morph.prototype.groupColor.lighter(60),
         IDE_Morph.prototype.groupColor.darker(10),
