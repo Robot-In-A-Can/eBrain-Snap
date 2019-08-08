@@ -9,6 +9,7 @@ html, body{
 #header{
   position:fixed;
   top:0;
+  height: 75px;
   width:100%;
   background:rgb(14,29,59);
   padding:0;
