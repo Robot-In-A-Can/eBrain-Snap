@@ -105,7 +105,7 @@ IDE_Morph.uber = Morph.prototype;
 // IDE_Morph preferences settings and skins
 
 IDE_Morph.prototype.setDefaultDesign = function () {
-    MorphicPreferences.isFlat = false;
+    MorphicPreferences.isFlat = true;
     SpriteMorph.prototype.paletteColor = new Color(55, 55, 55);
     SpriteMorph.prototype.paletteTextColor = new Color(230, 230, 230);
     StageMorph.prototype.paletteTextColor
