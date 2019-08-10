@@ -186,7 +186,7 @@ IDE_Morph.prototype.scriptsTexture = function () {
     var pic = newCanvas(new Point(100, 100)), // bigger scales faster
         ctx = pic.getContext('2d'),
         i;
-    for (i = 0; i < 100; i += 4) {
+    /*for (i = 0; i < 100; i += 4) {
         ctx.fillStyle = this.frameColor.toString();
         ctx.fillRect(i, 0, 1, 100);
         ctx.fillStyle = this.groupColor.lighter(6).toString();
@@ -194,7 +194,7 @@ IDE_Morph.prototype.scriptsTexture = function () {
         ctx.fillRect(i + 3, 0, 1, 100);
         ctx.fillStyle = this.groupColor.toString();
         ctx.fillRect(i + 2, 0, 1, 100);
-    }
+    }*/
     return pic;
 };
 
