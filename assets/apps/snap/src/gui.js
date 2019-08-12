@@ -142,6 +142,44 @@ IDE_Morph.prototype.setDefaultDesign = function () {
         = IDE_Morph.prototype.buttonLabelColor;
 };
 
+IDE_Morph.prototype.setFlatDarkDesign = function () {
+    MorphicPreferences.isFlat = true;
+    SpriteMorph.prototype.paletteColor = new Color(55, 55, 55);
+    SpriteMorph.prototype.paletteTextColor = new Color(230, 230, 230);
+    StageMorph.prototype.paletteTextColor
+        = SpriteMorph.prototype.paletteTextColor;
+    StageMorph.prototype.paletteColor = SpriteMorph.prototype.paletteColor;
+    SpriteMorph.prototype.sliderColor
+        = SpriteMorph.prototype.paletteColor.lighter(30);
+
+    IDE_Morph.prototype.buttonContrast = 30;
+    IDE_Morph.prototype.backgroundColor = new Color(40, 40, 40);
+    IDE_Morph.prototype.frameColor = SpriteMorph.prototype.paletteColor;
+
+    IDE_Morph.prototype.groupColor
+        = SpriteMorph.prototype.paletteColor.lighter(8);
+    IDE_Morph.prototype.sliderColor = SpriteMorph.prototype.sliderColor;
+    IDE_Morph.prototype.buttonLabelColor = new Color(255, 255, 255);
+    IDE_Morph.prototype.tabColors = [
+        IDE_Morph.prototype.groupColor.darker(40),
+        IDE_Morph.prototype.groupColor.darker(60),
+        IDE_Morph.prototype.groupColor
+    ];
+    IDE_Morph.prototype.rotationStyleColors = IDE_Morph.prototype.tabColors;
+    IDE_Morph.prototype.appModeColor = new Color();
+    IDE_Morph.prototype.scriptsPaneTexture = this.scriptsTexture();
+    IDE_Morph.prototype.padding = 5;
+
+    SpriteIconMorph.prototype.labelColor
+        = IDE_Morph.prototype.buttonLabelColor;
+    CostumeIconMorph.prototype.labelColor
+        = IDE_Morph.prototype.buttonLabelColor;
+    SoundIconMorph.prototype.labelColor
+        = IDE_Morph.prototype.buttonLabelColor;
+    TurtleIconMorph.prototype.labelColor
+        = IDE_Morph.prototype.buttonLabelColor;
+};
+
 IDE_Morph.prototype.setFlatDesign = function () {
     MorphicPreferences.isFlat = true;
     SpriteMorph.prototype.paletteColor = new Color(225, 225, 228); // block pallete background
@@ -157,7 +195,7 @@ IDE_Morph.prototype.setFlatDesign = function () {
 
     IDE_Morph.prototype.groupColor = new Color(236, 236, 240); // palatte
     IDE_Morph.prototype.sliderColor = SpriteMorph.prototype.sliderColor;
-    IDE_Morph.prototype.buttonLabelColor = new Color(40, 40, 40); //text color
+    IDE_Morph.prototype.buttonLabelColor = new Color(10, 10, 10); //text color
     IDE_Morph.prototype.tabColors = [
         IDE_Morph.prototype.groupColor.lighter(60),
         IDE_Morph.prototype.groupColor.darker(10),
@@ -165,8 +203,8 @@ IDE_Morph.prototype.setFlatDesign = function () {
     ];
     IDE_Morph.prototype.rotationStyleColors = [
         IDE_Morph.prototype.groupColor,
-        IDE_Morph.prototype.groupColor.darker(10),
-        IDE_Morph.prototype.groupColor.darker(30)
+        IDE_Morph.prototype.groupColor.lighter(60),
+        IDE_Morph.prototype.groupColor.darker(10)
     ];
     IDE_Morph.prototype.appModeColor = IDE_Morph.prototype.frameColor;
     IDE_Morph.prototype.scriptsPaneTexture = null;
@@ -1044,13 +1082,13 @@ IDE_Morph.prototype.createCategories = function () {
         var labelWidth = 75,
             colors = [
                 myself.frameColor,
-                myself.frameColor.darker(50),
+                myself.frameColor.darker(10),
                 SpriteMorph.prototype.blockColor[category]
             ],
             button;
 
         button = new ToggleButtonMorph(
-            colors,
+            colors.lighter(100),
             myself, // the IDE is the target
             function () {
                 myself.currentCategory = category;
@@ -2233,7 +2271,7 @@ IDE_Morph.prototype.applySavedSettings = function () {
     if (design === 'flat') {
         this.setFlatDesign();
     } else {
-        this.setDefaultDesign();
+        //this.setDefaultDesign();
     }
 
     // blocks zoom

@@ -1,5 +1,5 @@
 SpriteMorph.prototype.categories.push('Evelab');
-SpriteMorph.prototype.blockColor.Evelab = new Color(20,20, 20);
+SpriteMorph.prototype.blockColor.Evelab = new Color(50,50, 50);
 
 //Functions to handle events coming from evebrain
 StageMorph.prototype.setupEveBrainEvents = function () {
