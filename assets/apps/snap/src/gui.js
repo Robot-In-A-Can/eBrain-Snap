@@ -1088,7 +1088,7 @@ IDE_Morph.prototype.createCategories = function () {
             button;
 
         button = new ToggleButtonMorph(
-            colors.lighter(100),
+            colors,
             myself, // the IDE is the target
             function () {
                 myself.currentCategory = category;
