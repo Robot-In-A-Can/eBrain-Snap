@@ -1052,7 +1052,7 @@ IDE_Morph.prototype.createControlBar = function () {
 
         this.label = new StringMorph(
             (myself.projectName || localize('untitled')) + suffix,
-            14,
+            16,
             'sans-serif',
             true,
             false,
@@ -1081,9 +1081,9 @@ IDE_Morph.prototype.createCategories = function () {
     function addCategoryButton(category) {
         var labelWidth = 75,
             colors = [
-                myself.frameColor,
-                myself.frameColor.darker(10),
-                SpriteMorph.prototype.blockColor[category]
+                new Color(100, 100, 110), //button color
+                SpriteMorph.prototype.blockColor[category], //hover color
+                SpriteMorph.prototype.blockColor[category] //selected color
             ],
             button;
 
@@ -1108,11 +1108,12 @@ IDE_Morph.prototype.createCategories = function () {
             true // has preview
         );
 
+        button.fontSize = 14;
         button.corner = 8;
         button.padding = 0;
         button.labelShadowOffset = new Point(-1, -1);
         button.labelShadowColor = colors[1];
-        button.labelColor = myself.buttonLabelColor;
+        button.labelColor = myself.buttonLabelColor.lighter(100);
         button.fixLayout();
         button.refresh();
         myself.categories.add(button);
