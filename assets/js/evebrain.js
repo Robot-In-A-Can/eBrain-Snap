@@ -50,6 +50,25 @@ EveBrain.prototype = {
     }
   },
 
+  reconnect: function(){
+    var self = this;
+    self.ws.close();
+    clearTimeout(self.connTimeout);
+    self.robot_state = 'idle';
+    self.msg_stack = [];
+    self.cbs = {};
+    this.has_connected = false;
+    this.ws = filterUnicode(new WebSocket(this.url));
+    this.ws.onmessage = function(ws_msg){self.handle_ws(ws_msg)};
+    this.ws.onopen = function(){
+      self.version(function(){
+        self.setConnectedState(true);
+      });
+    }
+    this.ws.onerror = function(err){self.handleError(err)}
+    this.ws.onclose = function(err){self.handleError(err)}
+  },
+
   setConnectedState: function(state){
     var self = this;
     clearTimeout(self.connTimeout);
@@ -292,7 +311,7 @@ EveBrain.prototype = {
       msg.msg = filterUnicode(msg.msg);
       msg.id = filterUnicode(msg.id);
       msg.status = filterUnicode(msg.status);
-      //console.log(msg);
+      console.log(msg);
       clearTimeout(this.timeoutTimer);
       if(msg.status === 'notify'){
         this.broadcast(msg.id);
