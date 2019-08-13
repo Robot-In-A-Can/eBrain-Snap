@@ -32,6 +32,19 @@ EveBrain.prototype = {
   connect: function(){
     if(!this.connected && !this.error){
       var self = this;
+      try { 
+        //clear any previous websockets and clear msg queue and all timers
+        clearTimeout(self.timeoutTimer);
+        clearTimeout(self.connTimeout);
+        clearTimeout(self.reconnectTimer);
+        self.ws.close();
+        self.robot_state = 'idle';
+        self.msg_stack = [];
+        self.cbs = {};
+      }
+      catch(error) {
+        console.log(error);
+      }
       this.has_connected = false;
       this.ws = filterUnicode(new WebSocket(this.url));
       this.ws.onmessage = function(ws_msg){self.handle_ws(ws_msg)};
@@ -44,13 +57,18 @@ EveBrain.prototype = {
       this.ws.onclose = function(err){self.handleError(err)}
       this.connTimeout = window.setTimeout(function(){
         if(!self.connected){
-          self.ws.close();
+          try { 
+            self.ws.close();
+          }
+          catch(error) {
+            console.log(error);
+          }
         } 
       }, 1000);
     }
   },
 
-  reconnect: function(){
+  refresh: function(){
     var self = this;
     self.ws.close();
     clearTimeout(self.connTimeout);
@@ -77,7 +95,7 @@ EveBrain.prototype = {
     if(self.has_connected){
       setTimeout(function(){
         self.broadcast(self.connected ? 'connected' : 'disconnected');
-      }, 500);
+      }, 100);
     }
     // Try to auto reconnect if disconnected
     if(state){
@@ -87,10 +105,10 @@ EveBrain.prototype = {
       }
     }else{
       if(!self.reconnectTimer){
-        self.reconnectTimer = setTimeout(function(){
+          self.reconnectTimer = setTimeout(function(){
           self.reconnectTimer = undefined;
           self.connect();
-        }, 5000);
+        }, 1000);
       }
     }
   },
@@ -113,6 +131,8 @@ EveBrain.prototype = {
         this.ws.close()
       }
       this.setConnectedState(false);
+      clearTimeout(self.reconnectTimer);
+      self.reconnectTimer = undefined;
       this.msg_stack = [];
     }else{
       console.log(err);
@@ -212,7 +232,6 @@ EveBrain.prototype = {
   },
 
   digitalInput: function(pin_number, cb){
-    console.log("Entered digitalInput");
     var self = this;
     this.send({cmd: 'digitalInput', arg:pin_number}, function(state, msg){
       if(state === 'complete' && undefined != msg){
@@ -293,8 +312,10 @@ EveBrain.prototype = {
   send_msg: function(msg){
     var self = this;
     msg = filterUnicode(msg);
-    console.log(msg);
-    this.ws.send(JSON.stringify(msg));
+    //console.log(msg);
+    if(this.ws.readyState === WebSocket.OPEN){
+      this.ws.send(JSON.stringify(msg));
+    }
     this.timeoutTimer = window.setTimeout(function(){ self.handleError("Timeout") }, 3000);
   },
 
@@ -311,7 +332,7 @@ EveBrain.prototype = {
       msg.msg = filterUnicode(msg.msg);
       msg.id = filterUnicode(msg.id);
       msg.status = filterUnicode(msg.status);
-      console.log(msg);
+      //console.log(msg);
       clearTimeout(this.timeoutTimer);
       if(msg.status === 'notify'){
         this.broadcast(msg.id);
