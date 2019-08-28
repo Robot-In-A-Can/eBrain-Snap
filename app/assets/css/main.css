@@ -16,7 +16,7 @@ time, mark, audio, video {
   border: 0;
   font-size: 100%;
   font: inherit;
-  vertical-align: baseline;
+  vertical-align: middle;
 }
 /* HTML5 display-role reset for older browsers */
 article, aside, details, figcaption, figure, 
@@ -47,9 +47,32 @@ html, body{
   font-family: sans-serif;
 }
 
+#instructionsClick {
+  display:inline;
+  height: 50px;
+}
+
+#fourdotsbutton {
+  display:inline;
+  height: 50px;
+}
+
+#logo {
+  display:inline;
+}
+
+#searchbar {
+  display:inline;
+  position: absolute;
+  left: 40%;
+  margin-left: -125px;
+  margin-bottom: 15px;
+}
+
 #header{
   position:fixed;
   top:0;
+  height: 50px;
   width:100%;
   background:rgb(14,29,59);
   padding:0;
@@ -60,30 +83,31 @@ html, body{
   max-width:80%;
 }
 
-.title{
+/*.title{
     margin-block-start: 0;
     margin-block-end: -2px;
-}
+}*/
 
 .connState{
   position:absolute;
-  right:5px;
-  bottom:5px;
-  color:#FFF;
+  right:28px;
+  top:18px;
+  color:#FF2121;
+  fill: red;
 }
-.connState a{ color:#FFF}
-.connState.error{ color:#FF2121}
-.connState.error a{ color:#D12121}
-.connState.connected{color:#33D121}
-.connState.connected a{color:#33D121}
+.connState a{ color:#FF2121;  fill: red;}
+.connState.error{ color:#FF2121;  fill: red;}
+.connState.error a{ color:#D12121;  fill: white;}
+.connState.connected{color:#33D121;  fill: green;}
+.connState.connected a{color:#33D121;  fill: green;}
 
 #app{
-  margin-top: 0px;
+  margin-top: 50px;
   padding:0px;
 }
 
 #world {
-  //margin-top: 75px;
+  /*margin-top: 50px;*/
 }
 
 #home{
@@ -96,9 +120,7 @@ html, body{
 }
 
 #home .apps li{
-  display:block;
   width: 244px;
-  display: inline-block;
   vertical-align: top;
   background: #FFF;
   margin:10px;
@@ -148,6 +170,7 @@ html, body{
   top:5px;
   text-decoration:underline;
   color:#FFF;
+  visibility: hidden;
 }
 #save ul{
   display:none;

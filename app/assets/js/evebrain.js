@@ -1,4 +1,5 @@
 var escapable = /[\x00-\x1f\ud800-\udfff\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufff0-\uffff]/g;
+var attempts = 0;
 
 function filterUnicode(quoted){
 
@@ -51,20 +52,23 @@ EveBrain.prototype = {
       this.ws.onopen = function(){
         self.version(function(){
           self.setConnectedState(true);
+          attempts = 0;
         });
       }
-      this.ws.onerror = function(err){self.handleError(err)}
-      this.ws.onclose = function(err){self.handleError(err)}
-      this.connTimeout = window.setTimeout(function(){
-        if(!self.connected){
-          try { 
-            self.ws.close();
-          }
-          catch(error) {
-            console.log(error);
-          }
-        } 
-      }, 1000);
+      this.ws.onerror = function(err){self.handleError(err); attempts += 1;}
+      this.ws.onclose = function(err){self.handleError(err); attempts += 1;}
+      if (attempts < 30) {
+        this.connTimeout = window.setTimeout(function(){
+          if(!self.connected){
+            try { 
+              self.ws.close();
+            }
+            catch(error) {
+              console.log(error);
+            }
+          } 
+        }, 1000);
+      }
     }
   },
 
@@ -104,7 +108,7 @@ EveBrain.prototype = {
         self.reconnectTimer = undefined;
       }
     }else{
-      if(!self.reconnectTimer){
+      if(!self.reconnectTimer && attempts < 30){
           self.reconnectTimer = setTimeout(function(){
           self.reconnectTimer = undefined;
           self.connect();

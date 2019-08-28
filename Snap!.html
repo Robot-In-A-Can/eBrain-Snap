@@ -6,70 +6,68 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <title>Snap!</title>
     <meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1.0, user-scalable=no">
-    <link rel="stylesheet" href="assets/css/main.css">
-    <script type="text/javascript" src="assets/js/FileSaver.min.js"></script>
-    <script type="text/javascript" src="assets/js/evebrain.js"></script>
-    <script type="text/javascript" src="assets/js/evebrain-save.js"></script>
-    <script type="text/javascript" src="assets/js/evebrain-app.js"></script>
-    <script type="text/javascript" src="assets/js/persist.js"></script>
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="stylesheet" href="app/assets/css/main.css">
+    <link rel="stylesheet" href="app/assets/css/TOCSearch.css">
+    
+    <script type="text/javascript" src="app/assets/js/FileSaver.min.js"></script>
+    <script type="text/javascript" src="app/assets/js/evebrain.js"></script>
+    <script type="text/javascript" src="app/assets/js/evebrain-save.js"></script>
+    <script type="text/javascript" src="app/assets/js/evebrain-app.js"></script>
+    <script type="text/javascript" src="app/assets/js/persist.js"></script>
+    
+    <link rel="icon" type="image/png" sizes="32x32" href="app/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="app/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="app/favicon-16x16.png">
 </head>
+
+
 
 <body>
     <div id="header">
         <span class="connState"></span>
         <div id="save"></div>
-        <div onClick = "instructionClick();"><h1 class="title"><img src="assets/4dots.svg" alt="menu" style="height: 47px;"/> <img src="assets/logo.svg" alt="Robot In A Can Snap!" style="height: 48px;"/></h1></div>
-        <div id="instructions"><iframe id="instructionsframe" src="1_Start_Here!.html"></iframe></div>
+        <div id="instructionsClick">
+            <div id="fourdotsbutton"><img src="app/assets/4dots.svg" alt="menu"/></div>
+            <div id="logo"><img src="app/assets/logo.svg" alt="Robot In A Can Snap!" style="height: 37px; padding: 6px 6px 6px 6px;"/></div>
+        </div>
+        <div id="searchbar">
+            <a href="app/Guidebook.1.6.1.search.html" target="_blank"><img src="app/assets/GuidebookIcon.svg" alt="Robot In A Can Snap!" style="display:inline; height: 28px; padding: 11px 11px 15px 11px;"/></a>
+            <div class="form__field" style="display:inline;">
+                <div class="input__wrapper awesomplete-wrapper">
+                    <input id="toc-search" class="js-awesomplete js-input" type="search" aria-lablledby="toc-search__label" style="display:inline; width:300px; height:28px;" placeholder="Search Guidebook..." />
+                </div>
+            </div>
+        </div>
     </div>
+
     <div id="app">
-        <script type="text/javascript" src="assets/apps/snap/src/morphic.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/widgets.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/blocks.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/threads.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/objects.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/gui.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/paint.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/lists.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/byob.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/tables.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/xml.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/store.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/locale.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/cloud.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/sha512.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/evebrain-snap.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/mirobot-snap.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/FileSaver.min.js"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/symbols.js?version=2019-06-27"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/sketch.js?version=2019-06-27"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/video.js?version=2019-06-27"></script>
-        <script type="text/javascript" src="assets/apps/snap/src/maps.js?version=2019-06-27"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/morphic.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/widgets.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/blocks.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/threads.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/objects.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/gui.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/paint.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/lists.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/byob.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/tables.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/xml.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/store.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/locale.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/cloud.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/sha512.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/ebrain-snap.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/mirobot-snap.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/FileSaver.min.js"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/symbols.js?version=2019-06-27"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/sketch.js?version=2019-06-27"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/video.js?version=2019-06-27"></script>
+        <script type="text/javascript" src="app/assets/apps/snap/src/maps.js?version=2019-06-27"></script>
         <script type="text/javascript">
+
         var evebrain;
         var world;
         var openclose = 0;
-
-        instructionClick = function(){
-            openclose += 1;
-            if (openclose % 2 == 0) {
-                document.getElementById('header').style.height = '49px';
-                document.getElementById('instructions').style.visibility = 'hidden';
-                document.getElementById('instructions').style.height = '0';
-                document.getElementById('instructionsframe').style.visibility = 'hidden';
-                document.getElementById('instructionsframe').style.height = '0';
-            } else {
-                document.getElementById('header').style.height = '80%';
-                document.getElementById('instructions').style.visibility = 'visible';
-                document.getElementById('instructions').style.height = '100%';
-                document.getElementById('instructionsframe').style.visibility = 'visible';
-                document.getElementById('instructionsframe').style.height = '100%';
-            }
-            console.log(openclose);
-            
-        }
 
         window.location = '#m=' + '192.168.4.1';
 
@@ -78,7 +76,7 @@
             m.version(function(status, msg) {
                 if (Number(msg.msg) < 20150201 && !localStorage['_warning_done_']) {
                     localStorage['_warning_done_'] = true;
-                    alert("You'll need to update your Arduino firmware to use the addon blocks (bump and line following) in this app, but the other blocks should still work fine.");
+                    alert("You'll need to update your eBrain firmware to use the addon blocks (bump and line following) in this app, but the other blocks should still work fine.");
                 }
             });
         });
@@ -131,6 +129,7 @@
         l.href = l.href + document.location.hash;
     });
     </script>
+    <script type="text/javascript" src="app/assets/js/TOCSearch.js"></script>
 </body>
 
 </html>

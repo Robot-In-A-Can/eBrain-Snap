@@ -1,9 +1,9 @@
-SpriteMorph.prototype.categories.push('mirobot');
-SpriteMorph.prototype.blockColor.mirobot = new Color(216, 45, 45);
+SpriteMorph.prototype.categories.push('Robot');
+SpriteMorph.prototype.blockColor.Robot = new Color(216, 45, 45);
 
 
 // Mirobot functions
-Process.prototype.mirobotForward = function (distance) {
+Process.prototype.robotForward = function (distance) {
   // interpolated
   if (typeof this.context.proceed === 'undefined') {
     var self = this;

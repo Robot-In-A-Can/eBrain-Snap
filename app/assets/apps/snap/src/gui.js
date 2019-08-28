@@ -1079,13 +1079,22 @@ IDE_Morph.prototype.createCategories = function () {
     this.categories.silentSetWidth(this.paletteWidth);
 
     function addCategoryButton(category) {
-        var labelWidth = 75,
-            colors = [
-                new Color(100, 100, 110), //button color
-                SpriteMorph.prototype.blockColor[category], //hover color
+        var labelWidth = 75;
+        /*if (SpriteMorph.prototype.blockColor[category].b < 55 && SpriteMorph.prototype.blockColor[category].r < 55 && SpriteMorph.prototype.blockColor[category].g < 55) {
+            var colors = [
+                new Color(55,55,55), //button color
+                SpriteMorph.prototype.blockColor[category].lighter(55), //hover color
                 SpriteMorph.prototype.blockColor[category] //selected color
-            ],
-            button;
+            ];
+        } else {*/
+            var colors = [
+                SpriteMorph.prototype.blockColor[category], //button color
+                SpriteMorph.prototype.blockColor[category].lighter(55), //hover color
+                SpriteMorph.prototype.blockColor[category].darker(32) //selected color
+            ];        
+        //}
+        
+        var button;
 
         button = new ToggleButtonMorph(
             colors,
@@ -1108,12 +1117,16 @@ IDE_Morph.prototype.createCategories = function () {
             true // has preview
         );
 
-        button.fontSize = 14;
+        button.fontSize = 12;
         button.corner = 8;
         button.padding = 0;
         button.labelShadowOffset = new Point(-1, -1);
-        button.labelShadowColor = colors[1];
-        button.labelColor = myself.buttonLabelColor.lighter(100);
+        button.labelShadowColor = new Color(0,0,0);
+        //if (colors[2].b < 55 && colors[2].r < 55 && colors[2].g < 55) {
+        //    button.labelColor = new Color(220,220,234);
+        //} else {
+           button.labelColor = new Color(248,248,255);
+        //}
         button.fixLayout();
         button.refresh();
         myself.categories.add(button);
@@ -2220,7 +2233,7 @@ IDE_Morph.prototype.toggleRetina = function () {
 // IDE_Morph skins
 
 IDE_Morph.prototype.defaultDesign = function () {
-    this.setDefaultDesign();
+    this.setFlatDarkDesign();
     this.refreshIDE();
     this.removeSetting('design');
 };

@@ -1418,87 +1418,87 @@ SpriteMorph.prototype.initBlocks = function () {
         evebrainMotorDriver: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: '%motor Motor %direction %s Steps ',
           defaults: ['Left','Forward',100]
         },
         evebrainMotorDriverBoth: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Both Motors %directionboth %s Steps ',
           defaults: ['Forward',100]
         },
         evebrainPlayNote: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Buzzer note %s for duration %s seconds (5)',
           defaults: [1, 1]
         },
         evebrainGpio: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Pin Number %pin %onoff',
           defaults: [16,'gpio_on']
         },
         evebrainGpio_read: {
           only: Process,
           type: 'reporter',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Analog 0 Read',
         },
         evebrainGpio_readAnalog: {
           only: Process,
           type: 'reporter',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'External Analog %analogPin Read (SDA0 SCL2)',
           defaults: [1]
         },
         evebrainTemperature: {
           only: Process,
           type: 'reporter',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Temperature Read (16)',
         },
         evebrainHumidity: {
           only: Process,
           type: 'reporter',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Humidity Read (16)',
         },
         evebrainDigital_read: {
           only: Process,
           type: 'reporter',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Digital %pin Read',
           defaults: [4]
         },
         evebrainDistance_read: {
           only: Process,
           type: 'reporter',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Distance Sensor (Trig5 Echo4)',
         },
         evebrainGpio_pwm: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'PWM Pin %pwmPin Level %n',
           defaults: ['gpio_pwm_5',255]
         },
         evebrainServo: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Set Servo to %n degrees (10)',
           defaults: [90]
         },
         evebrainStop: {
           only: Process,
           type: 'command',
-          category: 'Evelab',
+          category: 'eBrain',
           spec: 'Stop'
         },
 
@@ -1506,35 +1506,35 @@ SpriteMorph.prototype.initBlocks = function () {
         mirobotForward: {
           only: Process,
           type: 'command',
-          category: 'mirobot',
+          category: 'Robot',
           spec: 'Move forward by %n mm',
           defaults: [100]
         },
         mirobotBack: {
           only: Process,
           type: 'command',
-          category: 'mirobot',
+          category: 'Robot',
           spec: 'Move back by %n mm',
           defaults: [100]
         },
         mirobotLeft: {
           only: Process,
           type: 'command',
-          category: 'mirobot',
+          category: 'Robot',
           spec: 'Turn %counterclockwise by %n degrees',
           defaults: [90]
         },
         mirobotRight: {
           only: Process,
           type: 'command',
-          category: 'mirobot',
+          category: 'Robot',
           spec: 'Turn %clockwise by %n degrees',
           defaults: [90]
         },
         mirobotStop: {
           only: Process,
           type: 'command',
-          category: 'mirobot',
+          category: 'Robot',
           spec: 'Stop'
         },
     };
@@ -2760,7 +2760,7 @@ SpriteMorph.prototype.blockTemplates = function (category) {
 
         blocks.push(this.makeBlockButton());
 
- 	} else if (cat === 'Evelab') {
+ 	} else if (cat === 'eBrain') {
         blocks.push(block('evebrainGpio'));
         blocks.push(block('evebrainDigital_read'));
         blocks.push('-');
@@ -2781,7 +2781,7 @@ SpriteMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('evebrainTemperature'));
         blocks.push(block('evebrainHumidity'));
         blocks.push(block('evebrainGpio_readAnalog'));
-    }else if (cat === 'mirobot') {
+    }else if (cat === 'Robot') {
 
         blocks.push(block('mirobotForward'));
         blocks.push(block('mirobotBack'));
@@ -8608,7 +8608,7 @@ StageMorph.prototype.blockTemplates = function (category) {
         }
 
         blocks.push(this.makeBlockButton());
-    } else if (cat === 'Evelab') {
+    } else if (cat === 'eBrain') {
         blocks.push(block('evebrainGpio'));
         blocks.push(block('evebrainDigital_read'));
         blocks.push('-');
@@ -8629,7 +8629,7 @@ StageMorph.prototype.blockTemplates = function (category) {
         blocks.push(block('evebrainTemperature'));
         blocks.push(block('evebrainHumidity'));
         blocks.push(block('evebrainGpio_readAnalog'));
-    }else if (cat === 'mirobot') {
+    }else if (cat === 'Robot') {
 
         blocks.push(block('mirobotForward'));
         blocks.push(block('mirobotBack'));

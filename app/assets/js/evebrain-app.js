@@ -79,26 +79,27 @@ EveBrainApp.prototype.setConnState = function(){
   var cs = document.querySelector('#header .connState');
   switch(this.connState){
     case 'not_set':
-      cs.innerHTML = '&#10007; <a href="#">Configure EveBrain connection</a>';
+      cs.innerHTML = '&#10007; Not Connected  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <object data="app/assets/ConnectIcon.svg" style="fill:red;" type="image/svg+xml"></object>&nbsp;&nbsp;<a href="#">Connect</a>&nbsp;&nbsp;';
       cs.querySelector('a').addEventListener('click', function(e){ self.configure(e) });
       cs.className = 'connState';
       break;
     case 'connected':
-      cs.innerHTML = '&#10003; Connected to EveBrain';
+      cs.innerHTML = '&#10003; Connected  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="app/assets/RefreshIcon.svg">&nbsp;&nbsp;<a href="#">Refresh</a>&nbsp;&nbsp;';
+      cs.querySelector('a').addEventListener('click', function(e){ self.configure(e) });
       cs.className = 'connState connected';
       break;
     case 'cant_connect':
-      cs.innerHTML = '&#10007; <a href="#">Can\'t connect to EveBrain<a>';
+      cs.innerHTML = '&#10007; Can\'t Connect   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="app/assets/RefreshIcon.svg">&nbsp;&nbsp;<a href="#">Refresh<a>&nbsp;&nbsp;';
       cs.querySelector('a').addEventListener('click', function(e){ self.configure(e) });
       cs.className = 'connState error';
       break;
     case 'disconnected':
-      cs.innerHTML = '&#10007; <a href="#">Reconnecting to EveBrain</a>';
+      cs.innerHTML = '&#10007; Not Connected  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="app/assets/RefreshIcon.svg">&nbsp;&nbsp;<a href="#">Refresh</a>&nbsp;&nbsp;';
       cs.querySelector('a').addEventListener('click', function(e){ self.configure(e) });
       cs.className = 'connState error';
       break;
     default:
-      cs.innerHTML = '&#10007; <a href="#">Configure EveBrain connection</a>';
+      cs.innerHTML = '&#10007; Not Connected  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="app/assets/ConnectIcon.svg">&nbsp;&nbsp;<a href="#">Connect</a>&nbsp;&nbsp;';
       cs.querySelector('a').addEventListener('click', function(e){ self.configure(e) });
       cs.className = 'connState';
       break;
