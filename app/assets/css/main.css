@@ -102,7 +102,7 @@ html, body{
 .connState.connected a{color:#33D121;  fill: green;}
 
 #app{
-  margin-top: 50px;
+  margin-top: 0px;
   padding:0px;
 }
 
