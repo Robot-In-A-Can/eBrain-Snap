@@ -3,7 +3,7 @@ SpriteMorph.prototype.blockColor.Robot = new Color(216, 45, 45);
 
 
 // Mirobot functions
-Process.prototype.robotForward = function (distance) {
+Process.prototype.mirobotForward = function (distance) {
   // interpolated
   if (typeof this.context.proceed === 'undefined') {
     var self = this;
