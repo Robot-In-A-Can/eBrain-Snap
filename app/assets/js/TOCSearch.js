@@ -7,7 +7,7 @@
  */
 (function() {
 'use strict';
-  
+
 var _ = function (input, o) {
 	var me = this;
 
@@ -30,8 +30,7 @@ var _ = function (input, o) {
 		filter: _.FILTER_CONTAINS,
 		sort: _.SORT_BYLENGTH,
     initialStatus: function(matchesCount) {
-      return matchesCount + ' matches were found.\n' +
-             'Use the Up and Down arrow keys to navigate them.';
+      return null; //matchesCount + ' matches were found.\n' + 'Use the Up and Down arrow keys to navigate them.';
     },
 		item: function (text, input) {
 			var html = input === '' ? text : text.replace(RegExp($.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>");
@@ -73,47 +72,47 @@ var _ = function (input, o) {
 
 	$.bind(this.input, {
 		"input": this.evaluate.bind(this),
-		"blur": this.close.bind(this),
-		"keydown": function(evt) {
-			var c = evt.keyCode;
+		//"blur": this.close.bind(this),
+    //"keydown": function(evt) {
+      //var c = evt.keyCode;
 
-			// If the dropdown `ul` is in view, then act on keydown for the following keys:
-			// Enter / Esc / Up / Down
-			if(me.opened) {
-				if (c === 13 && me.selected) { // Enter
-          var li = me.ul.children[me.index];
-					evt.preventDefault();
-          evt.originalTarget = li;
-					me.select(li, evt);
-				}
-				else if (c === 27) { // Esc
-					me.close();
-				}
-				else if (c === 38 || c === 40) { // Down/Up arrow
-					evt.preventDefault();
-					me[c === 38? "previous" : "next"]();
-				}
-			}
-		}
+      //// If the dropdown `ul` is in view, then act on keydown for the following keys:
+      //// Enter / Esc / Up / Down
+      //if(me.opened) {
+        //if (c === 13 && me.selected) { // Enter
+          //var li = me.ul.children[me.index];
+          //evt.preventDefault();
+          //evt.originalTarget = li;
+          //me.select(li, evt);
+        //}
+        //else if (c === 27) { // Esc
+          //me.close();
+        //}
+        //else if (c === 38 || c === 40) { // Down/Up arrow
+          //evt.preventDefault();
+          //me[c === 38? "previous" : "next"]();
+        //}
+      //}
+    //}
 	});
 
-	$.bind(this.input.form, {"submit": this.close.bind(this)});
+	//$.bind(this.input.form, {"submit": this.close.bind(this)});
 
-	$.bind(this.ul, {"mousedown": function(evt) {
-		var li = evt.target;
+	//$.bind(this.ul, {"mousedown": function(evt) {
+		//var li = evt.target;
 
-		if (li !== this) {
+		//if (li !== this) {
 
-			while (li && !/li/i.test(li.nodeName)) {
-				li = li.parentNode;
-			}
+			//while (li && !/li/i.test(li.nodeName)) {
+				//li = li.parentNode;
+			//}
 
-			if (li && evt.button === 0) {    // Only select on left click
-        evt.originalTarget = evt.target
-        me.select(li, evt); 
-			}
-		}
-	}});
+			//if (li && evt.button === 0) {    // Only select on left click
+        //evt.originalTarget = evt.target
+        //me.select(li, evt);
+			//}
+		//}
+	//}});
 
 	if (this.input.hasAttribute("list")) {
 		this.list = "#" + input.getAttribute("list");
@@ -162,7 +161,7 @@ _.prototype = {
 		this.ul.setAttribute("hidden", "");
 		this.index = -1;
     this.status.textContent = '';
-    
+
 
 		$.fire(this.input, "awesomplete-close");
 	},
@@ -212,7 +211,7 @@ _.prototype = {
 
 		if (selected) {
 			var prevented;
-      
+
 			$.fire(this.input, "awesomplete-select", {
         dataset: selected.dataset,
 				text: selected.textContent,
@@ -251,7 +250,7 @@ _.prototype = {
 
 					return i < me.maxItems - 1;
 				});
-      
+
       var ulLength = this.ul.children.length;
 			if ( ulLength === 0) {
 				this.close();
@@ -610,16 +609,16 @@ new Awesomplete(tocSearchInput, {
     return Awesomplete.FILTER_CONTAINS(text.name, input)
   },
   sort: function (a, b) {
- 
+
     return a.name < b.name? -1 : 1;
   },
   item: function(text, input) {
-    var html = 
+    var html =
                '<a class="t-milli" target="_blank" href="' +
                text.url + '">' +
                text.name.replace(RegExp(Awesomplete.$.regExpEscape(input.trim()), "gi"), "<mark>$&</mark>") +
                '</a>';
-    
+
     return Awesomplete.$.create("li", {
       innerHTML: html,
       "data-url": text.url,

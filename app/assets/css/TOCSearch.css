@@ -5,6 +5,7 @@
 
 .h-visually-hidden {
   margin-top: 100px;
+  display: none;
 }
 
 .awesomplete-wrapper > input {
