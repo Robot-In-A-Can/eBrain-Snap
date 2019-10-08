@@ -7,7 +7,7 @@ Robot in a Can's custom Snap! distro.
 
 ## Screenshots
 
-![NewRobotLogo_190704](/media/somma/easystore/RobotInACan/Branding/Current/NewRobotLogo_190704.png)
+![RobotLogo_190704](./app/RobotLogo.png)
 
 
 
