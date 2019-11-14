@@ -7,7 +7,7 @@ Robot in a Can's custom Snap! distro.
 
 ## Screenshots
 
-![NewRobotLogo_190704](/media/somma/easystore/RobotInACan/Branding/Current/NewRobotLogo_190704.png)
+![RobotLogo_190704](./app/RobotLogo.png)
 
 
 
@@ -43,6 +43,6 @@ Inspired by Makers and Hackers worldwide. Developed by the Robot in a Can team.
 
 ## License
 
-The GNU General Public License is a free, copyleft license for software and other kinds of works.
+The Affero General Public License is a free, copyleft license for software and other kinds of works.
 
-GNU © [RIAC]([https://robotinacan.com](https://robotinacan.com/))
+AGPL © [RIAC]([https://robotinacan.com](https://robotinacan.com/))
