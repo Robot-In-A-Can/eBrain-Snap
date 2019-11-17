@@ -69,7 +69,12 @@
         var world;
         var openclose = 0;
 
-        window.location = '#m=' + '192.168.4.1';
+        //Autoconnect! Can be annoying!
+        if (localStorage.getItem("IP") != null) {
+            window.location = '#m=' + localStorage.getItem("IP");
+        } else {
+            window.location = '#m=' + '192.168.4.1';
+        }
 
         var app = new EveBrainApp(function(m) {
             evebrain = m;

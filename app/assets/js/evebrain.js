@@ -108,7 +108,7 @@ EveBrain.prototype = {
         self.reconnectTimer = undefined;
       }
     }else{
-      if(!self.reconnectTimer && attempts < 30){
+      if(!self.reconnectTimer && attempts < 10){
           self.reconnectTimer = setTimeout(function(){
           self.reconnectTimer = undefined;
           self.connect();

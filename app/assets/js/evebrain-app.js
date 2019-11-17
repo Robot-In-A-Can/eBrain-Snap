@@ -66,6 +66,7 @@ EveBrainApp.prototype.handler = function(state){
 
 EveBrainApp.prototype.configure = function(e){
   var ip = prompt("Enter the address for your EveBrain here:\n (e.g. 192.168.4.1)", this.hashConfig['m']);
+  localStorage.setItem("IP", ip);
   if(ip){
     window.location = '#m=' + ip;
     this.connect();
