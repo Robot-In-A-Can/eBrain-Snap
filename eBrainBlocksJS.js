@@ -466,3 +466,5 @@ function writeToStream(...lines) {
   writer.releaseLock();
 
 }
+
+world.digitalSensor = [];
