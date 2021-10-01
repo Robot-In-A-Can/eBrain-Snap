@@ -1,5 +1,8 @@
 # Robot in a Can eBrain Snap!
 
+![RobotLogo](./robot.png)
+
+
 Robot in a Can's custom Snap! distro.
 
 ## Motivation
@@ -7,9 +10,7 @@ Robot in a Can's custom Snap! distro.
 
 ## Screenshots
 
-![RobotLogo_190704](./app/RobotLogo.png)
-
-
+Comming Soon
 
 ## Tech/framework used
 
