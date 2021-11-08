@@ -36,6 +36,9 @@
         <script src="src/api.js?version=2021-07-05"></script>
         <script src="src/sha512.js?version=2019-06-27"></script>
         <script src="src/FileSaver.min.js?version=2019-06-27"></script>
+        <!-- following two scripts added by Alexander Somma -->
+        <script src="src/onload.js"></script>
+        <script src="src/ecraft2learn.js"></script>
         <script>
             var world;
             window.onload = function () {
@@ -62,6 +65,10 @@
         function afterLoaded(){
             world.children[0].flatDesign();
             Process.prototype.enableJS = true;
+            world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
+                world.children[0].droppedText(libraryText, "RIAC");
+                this.isLoadingLibrary = true;
+            });
         }
     </script>
 </html>
