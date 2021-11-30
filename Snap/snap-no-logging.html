@@ -39,6 +39,8 @@
         <!-- following two scripts added by Alexander Somma -->
         <script src="src/onload.js"></script>
         <script src="src/ecraft2learn.js"></script>
+        <script src='https://cdn.statically.io/gh/WebReflection/circular-json/af2987de/build/circular-json.js'></script>
+        
         <script>
             var world;
             window.onload = function () {
@@ -70,5 +72,20 @@
                 this.isLoadingLibrary = true;
             });
         }
+
+          //XML as string?
+        var xml = world.children[0].serializer.serialize(world.children[0].stage);
+
+        //save 
+        document.getElementById('world').addEventListener('mouseup', event => {
+            var string = CircularJSON.stringify(world.children[0]);
+            localStorage.setItem('snapIDE', string);
+          },false);
+        
+
+        //load
+        var string = CircularJSON.parse(localStorage.snapIDE)
+        world.children[0].openProjectString(string); 
+
     </script>
 </html>
