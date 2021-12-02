@@ -76,17 +76,8 @@
                 var string = localStorage.snapIDE;
                 ide.openProjectString(string); 
             });
+            show_palette = false;
         }
-
-
-        //save 
-        document.getElementById('world').addEventListener('mouseup', event => {
-            var ide = world.children[0];
-            var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene)); 
-            localStorage.setItem('snapIDE', xml);
-          },false);
-        
-
         
 
     </script>
