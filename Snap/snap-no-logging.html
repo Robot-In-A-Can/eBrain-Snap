@@ -66,8 +66,10 @@
         window.addEventListener("load", afterLoaded,false);
 
         function afterLoaded(){
+           
             world.children[0].flatDesign();
             Process.prototype.enableJS = true;
+            world.children[0].setBlocksScale(1.2);
             world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
                 world.children[0].droppedText(libraryText, "RIAC");
                 this.isLoadingLibrary = true;
