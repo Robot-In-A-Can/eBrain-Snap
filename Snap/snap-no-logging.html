@@ -56,7 +56,9 @@
             }
         </script>
         <style>
-            /*@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
+            /*
+            //for ios to lock the screen in landscape
+            @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
               html {
                 transform: rotate(-90deg);
                 transform-origin: left top;
@@ -108,9 +110,10 @@
             function show() {
               const { type, angle } = screen.orientation;
               console.log(`Orientation type is ${type} & angle is ${angle}.`);
+              world.children[0].refreshIDE();
             }
 
-            screen.orientation.addEventListener("change", () => {
+            screen.orientation.addEventListener("change", () => {  
               show();;
             });
 
