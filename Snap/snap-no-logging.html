@@ -77,13 +77,13 @@
         </style>
     </head>
     <body style="margin: 0;">
-        <button onclick="rotate(this)" id="button">
+        <button onclick="rotate(this)" id="button" style="position: absolute;z-index: 1000;">
           Lock
         </button>
         <button onclick="screen.orientation.unlock()">
           Unlock
         </button>
-        <canvas id="world" tabindex="1" style="position: absolute; top:30px;"></canvas>
+        <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
     </body>
     <script>
         SpriteMorph.prototype.customCategories.set("RIAC",new Color(216,45,45));
