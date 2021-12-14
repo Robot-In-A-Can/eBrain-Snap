@@ -49,16 +49,6 @@
                 world = new WorldMorph(document.getElementById('world'));
                 new IDE_Morph().openIn(world);
                 loop();
-                var ide = world.children[0];
-                ide.palette.hide();
-                ide.categories.hide();
-                ide.spriteBar.hide();
-                ide.spriteEditor.hide();
-                ide.controlBar.hide();
-                ide.corralBar.hide();
-                ide.corral.hide();
-                world.children[0].stageHandle.hide()
-                ide.setEmbedMode();
             };
             function loop() {
                 requestAnimationFrame(loop);
@@ -84,8 +74,21 @@
         <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
     </body>
     <script>
-        SpriteMorph.prototype.customCategories.set("RIAC",new Color(216,45,45));
-        SpriteMorph.prototype.customCategories.set("eBrain",new Color(33,33,33));
         Process.prototype.enableJS = true;
+        window.addEventListener("load", afterLoaded,false);
+
+       
+        function afterLoaded(){
+            var ide = world.children[0];
+            ide.palette.hide();
+            ide.categories.hide();
+            ide.spriteBar.hide();
+            ide.spriteEditor.hide();
+            ide.controlBar.hide();
+            ide.corralBar.hide();
+            ide.corral.hide();
+            ide.stageHandle.hide();
+            ide.setEmbedMode();
+        }
     </script>
 </html>

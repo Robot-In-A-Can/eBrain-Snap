@@ -56,7 +56,7 @@
             }
         </script>
         <style>
-            @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
+            /*@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
               html {
                 transform: rotate(-90deg);
                 transform-origin: left top;
@@ -68,20 +68,59 @@
                 left: 0;
               }
             }
+        
+            @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
+              html {
+                
+              }
+            }*/
         </style>
     </head>
     <body style="margin: 0;">
-        <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
+        <button onclick="rotate(this)" id="button">
+          Lock
+        </button>
+        <button onclick="screen.orientation.unlock()">
+          Unlock
+        </button>
+        <canvas id="world" tabindex="1" style="position: absolute; top:30px;"></canvas>
     </body>
     <script>
         SpriteMorph.prototype.customCategories.set("RIAC",new Color(216,45,45));
         SpriteMorph.prototype.customCategories.set("eBrain",new Color(33,33,33));
         window.addEventListener("load", afterLoaded,false);
+        
+            function fullScreenCheck() {
+              if (document.fullscreenElement) return;
+              document.documentElement.webkitRequestFullscreen()
+              return document.documentElement.requestFullscreen();
+            }
+
+            async function rotate() {
+              try {
+                await fullScreenCheck();
+              } catch (err) {
+                console.error(err);
+              }
+              await screen.orientation.lock("landscape");
+            }
+
+            function show() {
+              const { type, angle } = screen.orientation;
+              console.log(`Orientation type is ${type} & angle is ${angle}.`);
+            }
+
+            screen.orientation.addEventListener("change", () => {
+              show();;
+            });
+
+            window.addEventListener("load", () => {
+              show();
+            });
 
        
         function afterLoaded(){
             var ide = world.children[0];
-            
             Process.prototype.enableJS = true;
             ide.flatDesign();
             ide.setBlocksScale(1.2);
