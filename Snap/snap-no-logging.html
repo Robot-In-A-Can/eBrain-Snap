@@ -55,6 +55,20 @@
                 world.doOneCycle();
             }
         </script>
+        <style>
+            @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
+              html {
+                transform: rotate(-90deg);
+                transform-origin: left top;
+                width: 100vh;
+                height: 100vw;
+                overflow-x: hidden;
+                position: absolute;
+                top: 100%;
+                left: 0;
+              }
+            }
+        </style>
     </head>
     <body style="margin: 0;">
         <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
