@@ -111,7 +111,7 @@
               const { type, angle } = screen.orientation;
               console.log(`Orientation type is ${type} & angle is ${angle}.`);
               world.setWidth(world.worldCanvas.width);
-              world.setHeight(world.worldCanvas.width.height);
+              world.setHeight(world.worldCanvas.height);
               world.children[0].refreshIDE();
               world.children[0].toggleStageSize();
             }
