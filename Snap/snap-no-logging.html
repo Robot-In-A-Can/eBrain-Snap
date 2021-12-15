@@ -123,19 +123,9 @@
         world.children[0].refreshIDE();
       }
 
-      function show() {
-        const { type, angle } = screen.orientation;
-        console.log(`Orientation type is ${type} & angle is ${angle}.`);
-      }
-
       screen.orientation.addEventListener("change", () => {
-        show();
+        rotate();
       });
-
-      window.addEventListener("load", () => {
-        show();
-      });
-
 
       function afterLoaded(){
         var ide = world.children[0];
@@ -150,9 +140,7 @@
           //var string = localStorage.snapIDE;
           //ide.openProjectString(string);
         });
-
         addToDemo();
-
       }
 
 
