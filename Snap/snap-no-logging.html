@@ -103,6 +103,7 @@
       SpriteMorph.prototype.customCategories.set("RIAC",new Color(216,45,45));
       SpriteMorph.prototype.customCategories.set("eBrain",new Color(33,33,33));
       window.addEventListener("load", afterLoaded,false);
+      var executed = false;
 
       function fullScreenCheck() {
         if (document.fullscreenElement) return;
@@ -111,21 +112,28 @@
       }
 
       async function rotate() {
-        try {
-          await fullScreenCheck();
-        } catch (err) {
-          console.error(err);
-        }
         await screen.orientation.lock("landscape");
         world.setWidth(world.worldCanvas.width);
         world.setHeight(world.worldCanvas.height);
-        world.children[0].toggleStageSize();
         world.children[0].refreshIDE();
+        mobileStageSmall();
       }
 
       screen.orientation.addEventListener("change", () => {
         rotate();
       });
+
+     async function mobileStageSmall(){
+        if (!executed) {
+            try {
+              await fullScreenCheck();
+            } catch (err) {
+              console.error(err);
+            }
+            executed = true;
+            world.children[0].toggleStageSize();
+        }
+      }
 
       function afterLoaded(){
         var ide = world.children[0];
