@@ -112,6 +112,11 @@
       }
 
       async function rotate() {
+        try {
+              await fullScreenCheck();
+            } catch (err) {
+              console.error(err);
+            }
         await screen.orientation.lock("landscape");
         world.setWidth(world.worldCanvas.width);
         world.setHeight(world.worldCanvas.height);
@@ -123,13 +128,8 @@
         rotate();
       });
 
-     async function mobileStageSmall(){
+      async function mobileStageSmall(){
         if (!executed) {
-            try {
-              await fullScreenCheck();
-            } catch (err) {
-              console.error(err);
-            }
             executed = true;
             world.children[0].toggleStageSize();
         }
