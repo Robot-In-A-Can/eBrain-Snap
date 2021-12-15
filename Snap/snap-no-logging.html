@@ -143,13 +143,13 @@
         ide.flatDesign();
         ide.setBlocksScale(1.2);
         ide.setPaletteWidth(235);
-        world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
+        /*world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
           world.children[0].droppedText(libraryText, "RIAC");
           this.isLoadingLibrary = true;
           //load
           var string = localStorage.snapIDE;
           ide.openProjectString(string);
-        });
+        });*/
 
         addToDemo();
 
@@ -157,11 +157,11 @@
 
 
       //save
-      document.getElementById('world').addEventListener('mouseup', event => {
+      /*document.getElementById('world').addEventListener('mouseup', event => {
         var ide = world.children[0];
         var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
         localStorage.setItem('snapIDE', xml);
-      },false);
+      },false);*/
 
       function addToDemo() {
         var h, b, c, ci, cb, cm, cd, co, cl, cu, cs, cmd, rings, rc, scripts;
