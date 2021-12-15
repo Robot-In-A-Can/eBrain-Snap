@@ -119,8 +119,8 @@
         await screen.orientation.lock("landscape");
         world.setWidth(world.worldCanvas.width);
         world.setHeight(world.worldCanvas.height);
-        world.children[0].refreshIDE();
         world.children[0].toggleStageSize();
+        world.children[0].refreshIDE();
       }
 
       function show() {
