@@ -147,6 +147,12 @@ EveBrain.prototype = {
   },
 
   move: function(direction, distance, cb){
+    // If we pass this first check, distance is a number or a string parseable as such
+    if (!(typeof distance === 'number' || !isNaN(distance))) {
+      throw new Error('The distance must be a number');
+    } else if (+distance < 0) {
+      throw new Error('For this command, distance must be positive.');
+    }
     this.send({cmd: direction, arg: distance}, cb);
   },
 
