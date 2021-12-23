@@ -1,95 +1,229 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Snap! 7 - dev - Build Your Own Blocks</title>
-        <link rel="icon" href="src/favicon.ico" type="image/x-icon">
-        <link rel="manifest" href="manifest.json">
-        <link rel="apple-touch-icon" href="img/snap-icon-152.png">
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="theme-color" content="white"/>
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="apple-mobile-web-app-status-bar-style" content="black">
-        <meta name="apple-mobile-web-app-title" content="Snap!">
-        <meta name="msapplication-TileImage" content="img/snap-icon-144.png">
-        <meta name="msapplication-TileColor" content="#FFFFFF">
-        <script src="src/morphic.js?version=2021-07-09"></script>
-        <script src="src/symbols.js?version=2021-03-03"></script>
-        <script src="src/widgets.js?version=2021-07-21"></script>
-        <script src="src/blocks.js?version=2021-07-05"></script>
-        <script src="src/threads.js?version=2021-07-20"></script>
-        <script src="src/objects.js?version=2021-07-23"></script>
-        <script src="src/scenes.js?version=2021-07-21"></script>
-        <script src="src/gui.js?version=2021-08-06"></script>
-        <script src="src/paint.js?version=2021-07-05"></script>
-        <script src="src/lists.js?version=2021-07-19"></script>
-        <script src="src/byob.js?version=2021-08-03"></script>
-        <script src="src/tables.js?version=2021-05-07"></script>
-        <script src="src/sketch.js?version=2021-07-05"></script>
-        <script src="src/video.js?version=2019-06-27"></script>
-        <script src="src/maps.js?version=2021-06-15"></script>
-        <script src="src/extensions.js?version=2021-08-03"></script>
-        <script src="src/xml.js?version=2021-07-05"></script>
-        <script src="src/store.js?version=2021-08-01"></script>
-        <script src="src/locale.js?version=2021-07-12"></script>
-        <script src="src/cloud.js?version=2021-02-04"></script>
-        <script src="src/api.js?version=2021-07-05"></script>
-        <script src="src/sha512.js?version=2019-06-27"></script>
-        <script src="src/FileSaver.min.js?version=2019-06-27"></script>
-        <!-- following two scripts added by Alexander Somma -->
-        <script src="src/onload.js"></script>
-        <script src="src/ecraft2learn.js"></script>
-        <!--<script src='https://cdn.statically.io/gh/WebReflection/circular-json/af2987de/build/circular-json.js'></script>-->
+  <head>
+    <title>Snap! 7.0.1 - dev - Build Your Own Blocks</title>
+      <link rel="icon" href="src/favicon.ico" type="image/x-icon">
+      <link rel="manifest" href="manifest.json">
+      <link rel="apple-touch-icon" href="img/snap-icon-152.png">
+      <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="theme-color" content="white"/>
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="apple-mobile-web-app-status-bar-style" content="black">
+      <meta name="apple-mobile-web-app-title" content="Snap!">
+      <meta name="msapplication-TileImage" content="img/snap-icon-144.png">
+      <meta name="msapplication-TileColor" content="#FFFFFF">
+      <script src="src/morphic.js?version=2021-12-10"></script>
+      <script src="src/symbols.js?version=2021-03-03"></script>
+      <script src="src/widgets.js?version=2021-17-09"></script>
+      <script src="src/blocks.js?version=2021-12-09"></script>
+      <script src="src/threads.js?version=2021-12-15"></script>
+      <script src="src/objects.js?version=2021-12-13"></script>
+      <script src="src/scenes.js?version=2021-11-24"></script>
+      <script src="src/gui.js?version=2021-12-14"></script>
+      <script src="src/paint.js?version=2021-07-05"></script>
+      <script src="src/lists.js?version=2021-12-15"></script>
+      <script src="src/byob.js?version=2021-11-23"></script>
+      <script src="src/tables.js?version=2021-05-07"></script>
+      <script src="src/sketch.js?version=2021-11-03"></script>
+      <script src="src/video.js?version=2019-06-27"></script>
+      <script src="src/maps.js?version=2021-06-15"></script>
+      <script src="src/extensions.js?version=2021-12-15"></script>
+      <script src="src/xml.js?version=2021-07-05"></script>
+      <script src="src/store.js?version=2021-12-14"></script>
+      <script src="src/locale.js?version=2021-12-10"></script>
+      <script src="src/cloud.js?version=2021-02-04"></script>
+      <script src="src/api.js?version=2021-11-17"></script>
+      <script src="src/sha512.js?version=2019-06-27"></script>
+      <script src="src/FileSaver.min.js?version=2019-06-27"></script>
+      <!-- following two scripts added by Alexander Somma -->
+      <script src="src/onload.js"></script>
+      <script src="src/ecraft2learn.js"></script>
+      <!--<script src='https://cdn.statically.io/gh/WebReflection/circular-json/af2987de/build/circular-json.js'></script>-->
 
-        <script>
-            var world;
-            window.onload = function () {
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('sw.js');
-                }
-                world = new WorldMorph(document.getElementById('world'));
-                new IDE_Morph().openIn(world);
-                loop();
-            };
-            function loop() {
-                requestAnimationFrame(loop);
-                world.doOneCycle();
-            }
-        </script>
-    </head>
-    <body style="margin: 0;">
-        <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
-    </body>
     <script>
-        SpriteMorph.prototype.customCategories.set("RIAC",new Color(216,45,45));
-        SpriteMorph.prototype.customCategories.set("eBrain",new Color(33,33,33));
-        window.addEventListener("load", afterLoaded,false);
-
-        function afterLoaded(){
-           
-            world.children[0].flatDesign();
-            Process.prototype.enableJS = true;
-            world.children[0].setBlocksScale(1.2);
-            world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
-                world.children[0].droppedText(libraryText, "RIAC");
-                this.isLoadingLibrary = true;
-                //load code from localstorage
-                var ide = world.children[0];
-                var string = localStorage.snapIDE;
-                ide.openProjectString(string); 
-            });
-        }
-
-
-        //setup event listener to autosave 
-        document.getElementById('world').addEventListener('mouseup', event => {
-            var ide = world.children[0];
-            var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene)); 
-            localStorage.setItem('snapIDE', xml);
-          },false);
-        
-
-        
+      var world;
+      window.onload = function () {
+          if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.register('sw.js');
+          }
+          world = new WorldMorph(document.getElementById('world'));
+          new IDE_Morph().openIn(world);
+          loop();
+      };
+      function loop() {
+          requestAnimationFrame(loop);
+          world.doOneCycle();
+      }
 
     </script>
-</html>
+    <style>
+
+      /*
+      //for ios to lock the screen in landscape
+      @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
+      html {
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      width: 100vh;
+      height: 100vw;
+      overflow-x: hidden;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      }
+      }
+      @media screen and (min-width: 320px) and (max-width: 767px) and (orientation: landscape) {
+      html {
+      }
+      }*/
+    </style>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+    <link rel="stylesheet" type="text/css" href="modal.css">
+    <style>body {padding: unset}</style>
+  </head>
+  <body style="margin: 0;">
+    <div id="MobileModal" class="modal">
+      <!-- Modal content -->
+      <div class="modal-content">
+        <p>Faites tourner votre portable.</p>
+    <button onclick="rotate(this)" id="button" style="position: absolute;z-index: 1000;">
+      Lock to Landscape
+    </button>
+    <button onclick="screen.orientation.unlock()">
+      Unlock
+    </button>
+        <p>Please rotate your device.</p>
+      </div>
+    </div>
+    <canvas id="world" tabindex="1" style="position: absolute;"></canvas>
+  </body>
+    <script>
+      SpriteMorph.prototype.customCategories.set("RIAC",new Color(216,45,45));
+      SpriteMorph.prototype.customCategories.set("eBrain",new Color(33,33,33));
+      window.addEventListener("load", afterLoaded,false);
+      var executed = false;
+
+      function fullScreenCheck() {
+        if (document.fullscreenElement) return;
+        document.documentElement.webkitRequestFullscreen()
+        return document.documentElement.requestFullscreen();
+      }
+
+      async function rotate() {
+        try {
+            await fullScreenCheck();
+          } catch (err) {
+            console.error(err);
+          }
+        await screen.orientation.lock("landscape");
+        world.setWidth(world.worldCanvas.width);
+        world.setHeight(world.worldCanvas.height);
+        world.children[0].refreshIDE();
+        mobileStageSmall();
+      }
+
+      screen.orientation.addEventListener("change", () => {
+        rotate();
+      });
+
+      async function mobileStageSmall(){
+        if (!executed) {
+            executed = true;
+            world.children[0].toggleStageSize();
+        }
+      }
+
+      function afterLoaded(){
+        var ide = world.children[0];
+        Process.prototype.enableJS = true;
+        ide.flatDesign();
+        ide.setBlocksScale(1.2);
+        ide.setPaletteWidth(235);
+        world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
+          world.children[0].droppedText(libraryText, "RIAC");
+          this.isLoadingLibrary = true;
+          //load
+          //var string = localStorage.snapIDE;
+          //ide.openProjectString(string);
+        });
+        addToDemo();
+      }
+
+
+      //save
+      /*document.getElementById('world').addEventListener('mouseup', event => {
+        var ide = world.children[0];
+        var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
+        localStorage.setItem('snapIDE', xml);
+      },false);*/
+
+      function addToDemo() {
+        var h, b, c, ci, cb, cm, cd, co, cl, cu, cs, cmd, rings, rc, scripts;
+        // SyntaxElementMorph.prototype.setScale(2.5);
+
+        h = new HatBlockMorph();
+        h.setSpec('When %greenflag pressed');
+
+        b = new ReporterBlockMorph(true);
+        b.setSpec('%bool');
+
+        c = new CommandBlockMorph();
+        c.setSpec('this is a test $globe');
+
+        ci = new CommandBlockMorph();
+        ci.setSpec('block with input %s unit %mult%n number');
+
+        cb = new CommandBlockMorph();
+        cb.setSpec('bool %b ?');
+
+        cd = new CommandBlockMorph();
+        cd.setSpec('direction %dir degrees');
+
+        co = new CommandBlockMorph();
+        co.setSpec('object %obj');
+
+        cl = new CommandBlockMorph();
+        cl.setSpec('list %l');
+
+        cu = new CommandBlockMorph();
+        cu.setSpec('list %upvar');
+
+        cs = new CommandBlockMorph();
+        cs.setSpec('control %b %ca');
+
+        cmd = new CommandBlockMorph();
+        cmd.setSpec('command %cmdRing');
+
+        rings = new CommandBlockMorph();
+        rings.setSpec('reporter %repRing predicate %predRing');
+
+        rc = new ReporterBlockMorph();
+        rc.setSpec('color %clr');
+
+        scripts = new ScriptsMorph();
+
+        BlockMorph.prototype.addToDemoMenu([
+          'Syntax',
+          [
+            [h, 'hat'],
+            [b, 'predicate'],
+            [c, 'with label text'],
+            [ci, 'editable input slots'],
+            [cb, 'Boolean slot'],
+            //[cm, 'menu input'],
+            [cd, 'direction input'],
+            [co, 'object input'],
+            [cl, 'list input'],
+            [cu, 'upvar input'],
+            [cs, 'loop input'],
+            [cmd, 'cmd ring input'],
+            [rings, 'reporter rings input'],
+            [rc, 'color input'],
+            [scripts, 'scripts']
+          ]
+        ]);
+      }
+
+    </script>
+  </html>
