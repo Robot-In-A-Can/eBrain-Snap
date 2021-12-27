@@ -12,6 +12,70 @@ function filterUnicode(quoted){
   });
 }
 
+/**
+ * ParentEveBrain has the movement functions (move, turn,
+ * forward, etc). These functions then call the send function,
+ * which subclasses need to define.
+ */
+var ParentEveBrain = function() {
+}
+
+ParentEveBrain.prototype = {
+  constructor: ParentEveBrain,
+
+  move: function(direction, distance, cb){
+    // If we pass this first check, distance is a number or a string parseable as such
+    if (!(typeof distance === 'number' || !isNaN(distance))) {
+      throw new Error('The distance must be a number');
+    } else if (+distance < 0) {
+      throw new Error('For this command, distance must be positive.');
+    }
+    this.send({cmd: direction, arg: distance}, cb);
+  },
+
+  turn: function(direction, angle, cb){
+    this.send({cmd: direction, arg: angle}, cb);
+  },
+
+  forward: function(distance, cb){
+    this.move('forward', distance, cb);
+  },
+
+  back: function(distance, cb){
+    this.move('back', distance, cb);
+  },
+
+  left: function(distance, cb){
+    this.move('right', distance, cb);
+  },
+
+  right: function(distance, cb){
+    this.move('left', distance, cb);
+  },
+
+  leftMotorForward: function(distance, cb){
+    this.move('leftMotorF', distance, cb);
+  },
+
+  rightMotorForward: function(distance, cb){
+    this.move('rightMotorF', distance, cb);
+  },
+
+  
+  leftMotorBackward: function(distance, cb){
+    this.move('leftMotorB', distance, cb);
+  },
+
+  rightMotorBackward: function(distance, cb){
+    this.move('rightMotorB', distance, cb);
+  },
+
+  arc: function(angle,radius,repeat,cb){
+    this.send({cmd: 'arc' , arg:[angle,radius,repeat]}, cb);
+  }
+}
+
+
 var EveBrain = function(url){
   this.url = url;
   this.connect();
@@ -146,58 +210,7 @@ EveBrain.prototype = {
     }
   },
 
-  move: function(direction, distance, cb){
-    // If we pass this first check, distance is a number or a string parseable as such
-    if (!(typeof distance === 'number' || !isNaN(distance))) {
-      throw new Error('The distance must be a number');
-    } else if (+distance < 0) {
-      throw new Error('For this command, distance must be positive.');
-    }
-    this.send({cmd: direction, arg: distance}, cb);
-  },
-
-  turn: function(direction, angle, cb){
-    this.send({cmd: direction, arg: angle}, cb);
-  },
-
-  forward: function(distance, cb){
-    this.move('forward', distance, cb);
-  },
-
-  back: function(distance, cb){
-    this.move('back', distance, cb);
-  },
-
-  left: function(distance, cb){
-    this.move('right', distance, cb);
-  },
-
-  right: function(distance, cb){
-    this.move('left', distance, cb);
-  },
-
-  leftMotorForward: function(distance, cb){
-    this.move('leftMotorF', distance, cb);
-  },
-
-  rightMotorForward: function(distance, cb){
-    this.move('rightMotorF', distance, cb);
-  },
-
-  
-  leftMotorBackward: function(distance, cb){
-    this.move('leftMotorB', distance, cb);
-  },
-
-  rightMotorBackward: function(distance, cb){
-    this.move('rightMotorB', distance, cb);
-  },
-
-  arc: function(angle,radius,repeat,cb){
-    this.send({cmd: 'arc' , arg:[angle,radius,repeat]}, cb);
-  },
-
-
+  // note: movement function are in the ParentEveBrain.
 
   //EveOneCommands
   gpio: function(pin, pin_state, cb){
@@ -409,6 +422,36 @@ EveBrain.prototype = {
   msg_stack: []
 }
 
+// Add the movement functions to the EveBrain prototype
+for (parentMemberName in ParentEveBrain.prototype) {
+  EveBrain.prototype[parentMemberName] = ParentEveBrain.prototype[parentMemberName];
+}
+
+
+var EveBrainUSB = function() {
+}
+
+EveBrainUSB.prototype = Object.create(ParentEveBrain.prototype);
+Object.defineProperty(EveBrainUSB.prototype, 'constructor', {
+  value: EveBrainUSB,
+  enumerable: false,
+  writable: true
+});
+
+
+EveBrainUSB.prototype.send = function(message, callback) {
+  message = filterUnicode(message);
+  message.id = Math.random().toString(36).substr(2, 10);
+  writeToStream(JSON.stringify(message));
+  //console.log('about to add to callbacks');
+  addToUSBCallbacks(message.id, callback);
+}
+
+// Add the movement functions to the prototype
+for (parentMemberName in ParentEveBrain.prototype) {
+  EveBrainUSB.prototype[parentMemberName] = ParentEveBrain.prototype[parentMemberName];
+}
+
 
 let inputDone;
 let outputDone;
@@ -435,9 +478,19 @@ async function USBconnect() {
 
   world.reader = inputStream.getReader();
   readLoop();
-
 }
 
+USBcallbacks = {};
+
+function addToUSBCallbacks(id, callback) {
+  USBcallbacks[id] = callback;
+}
+
+/**
+ * This reads from the serial in a loop, and 
+ * runs the given callbacks (from USBcallbacks) if the 
+ * ID matches. Deletes the callback if the status is 'complete'
+ */
 async function readLoop() {
   // CODELAB: Add read loop here.
   var log;
@@ -452,6 +505,20 @@ async function readLoop() {
       }
       world.USB += value;
       console.log (value + '\n');
+
+      // Now, I check if the JSON is complete and respond to the callback if necessary
+      if (world.USB.includes('}')) {
+        var message = tryParseeBrainResponse(world.USB);
+        if (message && USBcallbacks[message.id]) {
+          // Here, actually call the cb
+          if(message.status === 'accepted'){
+            USBcallbacks[message.id]('started', message);
+          } else if(message.status === 'complete'){
+            USBcallbacks[message.id]('complete', message);
+            delete USBcallbacks[message.id];
+          }
+        }
+      }
     }
     if (done) {
       console.log('[readLoop] DONE', done);
@@ -460,6 +527,21 @@ async function readLoop() {
     }
   }
   //return log;
+}
+
+/**
+ * Tries to parse string as json. Also verifies that it is valid as a
+ * response from the eBrain (check it has an id).
+ * @return The object or false
+*/
+function tryParseeBrainResponse(jsonString) {
+  try {
+    var response = JSON.parse(jsonString);
+    if (response && typeof response === "object" && response.id) {
+      return response;
+    }
+  } catch (e) {}
+  return false;
 }
 
 function writeToStream(...lines) {
