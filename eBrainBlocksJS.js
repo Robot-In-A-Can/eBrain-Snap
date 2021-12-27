@@ -14,14 +14,25 @@ function filterUnicode(quoted){
 
 /**
  * ParentEveBrain has the movement functions (move, turn,
- * forward, etc). These functions then call the send function,
- * which subclasses need to define.
+ * forward, etc) and digitalInput. These functions then 
+ * call the send function, which subclasses need to define.
  */
 var ParentEveBrain = function() {
+  this.digitalSensor = [];
 }
 
 ParentEveBrain.prototype = {
   constructor: ParentEveBrain,
+
+  digitalInput: function(pin_number, cb){
+    var self = this;
+    this.send({cmd: 'digitalInput', arg:pin_number}, function(state, msg){
+      cb(state, msg);
+      if(state === 'complete' && undefined != msg){
+        self.digitalSensor[pin_number] = msg.msg;
+      }
+    });
+  },
 
   move: function(direction, distance, cb){
     // If we pass this first check, distance is a number or a string parseable as such
@@ -77,13 +88,14 @@ ParentEveBrain.prototype = {
 
 
 var EveBrain = function(url){
+  ParentEveBrain.call(this);
   this.url = url;
   this.connect();
   this.cbs = {};
   this.listeners = [];
   this.sensorState = {follow: null, collide: null};
   this.analogSensor = {level: null};
-  this.digitalSensor = [];
+  //this.digitalSensor = [];
   this.wifiNetworks = {};
   this.ipAddress = {};
   this.distanceSensor = {level: null};
@@ -257,16 +269,6 @@ EveBrain.prototype = {
     });
   },
 
-  digitalInput: function(pin_number, cb){
-    var self = this;
-    this.send({cmd: 'digitalInput', arg:pin_number}, function(state, msg){
-      if(state === 'complete' && undefined != msg){
-        self.digitalSensor[pin_number] = msg.msg;
-        cb(self.digitalSensor[pin_number]);
-      }
-    });
-  },
-
   distanceInput: function(cb){
     var self = this;
     this.send({cmd: 'distanceSensor'}, function(state, msg){
@@ -429,6 +431,7 @@ for (parentMemberName in ParentEveBrain.prototype) {
 
 
 var EveBrainUSB = function() {
+  ParentEveBrain.call(this);
 }
 
 EveBrainUSB.prototype = Object.create(ParentEveBrain.prototype);
@@ -443,7 +446,6 @@ EveBrainUSB.prototype.send = function(message, callback) {
   message = filterUnicode(message);
   message.id = Math.random().toString(36).substr(2, 10);
   writeToStream(JSON.stringify(message));
-  //console.log('about to add to callbacks');
   addToUSBCallbacks(message.id, callback);
 }
 
@@ -462,16 +464,15 @@ async function USBconnect() {
   // - Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
-  // CODELAB: Add code setup the output stream here.
+  // Setup the output stream
   const encoder = new TextEncoderStream();
   outputDone = encoder.readable.pipeTo(world.port.writable);
   world.outputStream = encoder.writable;
 
   // CODELAB: Send CTRL-C and turn off echo on REPL
   writeToStream(' {cmd: "version", id: "k1q6if75si"} ');
-  //writeToStream('\x03', 'echo(false);');
 
-  // CODELAB: Add code to read the stream here.\
+  // Make stream
   let decoder = new TextDecoderStream();
   inputDone = world.port.readable.pipeTo(decoder.writable);
   inputStream = decoder.readable;
@@ -545,7 +546,7 @@ function tryParseeBrainResponse(jsonString) {
 }
 
 function writeToStream(...lines) {
-  // CODELAB: Write to output stream
+  // Write to output stream
   const writer = world.outputStream.getWriter();
   lines.forEach((line) => {
     console.log('[SEND]', line);
@@ -554,5 +555,3 @@ function writeToStream(...lines) {
   writer.releaseLock();
 
 }
-
-world.digitalSensor = [];
