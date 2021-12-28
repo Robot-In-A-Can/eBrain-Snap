@@ -15,10 +15,17 @@ function filterUnicode(quoted){
 /**
  * ParentEveBrain has the movement functions (move, turn,
  * forward, etc) and digitalInput. These functions then 
- * call the send function, which subclasses need to define.
+ * call the send_msg function, which subclasses need to define.
+ * Methods required to implement: send, clearMessagesCallbacks.
+ * 
+ * NOTE: the standard API for callbacks is: state (usually started 
+ * or complete), message (the returned message from the robot), optional.
+ * Optional is not passed usually, so it is undefined (except when stop() is used).
  */
 var ParentEveBrain = function() {
   this.digitalSensor = [];
+  this.robot_state = 'idle';
+  this.cbs = {};
 }
 
 ParentEveBrain.prototype = {
@@ -95,7 +102,6 @@ var EveBrain = function(url){
   this.listeners = [];
   this.sensorState = {follow: null, collide: null};
   this.analogSensor = {level: null};
-  //this.digitalSensor = [];
   this.wifiNetworks = {};
   this.ipAddress = {};
   this.distanceSensor = {level: null};
@@ -208,6 +214,11 @@ EveBrain.prototype = {
     this.listeners.push(listener);
   },
 
+  clearMessagesCallbacks: function() {
+    this.cbs = {};
+    this.msg_stack = [];
+  },
+
   handleError: function(err){
     if(err instanceof CloseEvent || err === 'Timeout'){
       if(this.ws.readyState === WebSocket.OPEN){
@@ -289,21 +300,6 @@ EveBrain.prototype = {
 
   beep: function(note,duration,cb){
     this.send({cmd: 'beep' , arg:[note,duration*1000]}, cb);
-  },
-
-  stop: function(cb){
-    var self = this;
-    this.send({cmd:'stop'}, function(state, msg, recursion){
-      if(state === 'complete' && !recursion){
-        for(var i in self.cbs){
-          self.cbs[i]('complete', undefined, true);
-        }
-        self.robot_state = 'idle';
-        self.msg_stack = [];
-        self.cbs = {};
-        if(cb){ cb(state); }
-      }
-    });
   },
 
   pause: function(cb){
@@ -420,6 +416,21 @@ EveBrain.prototype = {
     }
   },
 
+  stop: function(){
+    var self = this;
+    this.send({cmd:'stop'}, function(state, msg, recursion){
+      console.log('in stop callback');
+      if(state === 'complete' && !recursion){
+        for(var i in self.cbs){
+          console.log('calling callback ' + self.cbs[i]);
+          self.cbs[i]('complete', undefined, true);
+        }
+        self.robot_state = 'idle';
+        self.clearMessagesCallbacks();
+      }
+    });
+  },
+
   robot_state: 'idle',
   msg_stack: []
 }
@@ -432,7 +443,8 @@ for (parentMemberName in ParentEveBrain.prototype) {
 
 var EveBrainUSB = function() {
   ParentEveBrain.call(this);
-}
+  this.cbs = USBcallbacks;
+};
 
 EveBrainUSB.prototype = Object.create(ParentEveBrain.prototype);
 Object.defineProperty(EveBrainUSB.prototype, 'constructor', {
@@ -441,12 +453,46 @@ Object.defineProperty(EveBrainUSB.prototype, 'constructor', {
   writable: true
 });
 
-
 EveBrainUSB.prototype.send = function(message, callback) {
+  if(['stop', 'pause', 'resume', 'ping', 'version'].indexOf(message.cmd) < 0 && this.robot_state !== 'idle'){
+    throw new Error('Cannot call multiple commands at once on USB');
+  }
+
   message = filterUnicode(message);
   message.id = Math.random().toString(36).substr(2, 10);
-  writeToStream(JSON.stringify(message));
-  addToUSBCallbacks(message.id, callback);
+  
+  // We make a new callback that sets this.robot_state because the
+  // loop that calls the callbacks is in a global function, so there's
+  // no easy way to have it set this.robot_state (without it being a total kludge).
+  var self = this;
+  var newCallback = function(state, message, optional) {
+    callback(state, message, optional);
+    if (state == 'complete') {
+      self.robot_state = 'idle';
+    } else if (state == 'started') {
+      self.robot_state = 'running';
+    }
+  }
+  addToUSBCallbacks(message.id, newCallback);
+  writeToStream(JSON.stringify(message)); // Write the message at the end to avoid a race with the add to callback
+}
+
+EveBrainUSB.prototype.clearMessagesCallbacks = function() {
+  USBcallbacks = {};
+  this.cbs = USBcallbacks;
+}
+
+EveBrainUSB.prototype.stop = function(){
+  var self = this;
+  this.send({cmd:'stop'}, function(state, msg, recursion){
+    if(state === 'complete' && !recursion){
+      for(var i in self.cbs){
+        self.cbs[i]('complete', undefined, true);
+      }
+      self.robot_state = 'idle';
+      self.clearMessagesCallbacks();
+    }
+  });
 }
 
 // Add the movement functions to the prototype
@@ -454,14 +500,13 @@ for (parentMemberName in ParentEveBrain.prototype) {
   EveBrainUSB.prototype[parentMemberName] = ParentEveBrain.prototype[parentMemberName];
 }
 
-
 let inputDone;
 let outputDone;
 
 async function USBconnect() {
-  // CODELAB: Add code to request & open port here.
+  // Request & open port here.
   world.port = await navigator.serial.requestPort();
-  // - Wait for the port to open.
+  // Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
   // Setup the output stream
@@ -478,7 +523,7 @@ async function USBconnect() {
   inputStream = decoder.readable;
 
   world.reader = inputStream.getReader();
-  readLoop();
+  readLoop(); // Start infinite read loop
 }
 
 USBcallbacks = {};
@@ -493,7 +538,6 @@ function addToUSBCallbacks(id, callback) {
  * ID matches. Deletes the callback if the status is 'complete'
  */
 async function readLoop() {
-  // CODELAB: Add read loop here.
   var log;
   world.USB = '';
   console.log("USB Reader Listening...");
@@ -501,23 +545,32 @@ async function readLoop() {
   while (true) {
     const { value, done } = await world.reader.read();
     if (value) {
-      if(value.includes('{')){
+      /*if(value.includes('{')){
         world.USB = '';
-      }
+      }*/
       world.USB += value;
       console.log (value + '\n');
 
       // Now, I check if the JSON is complete and respond to the callback if necessary
+      // and remove the message from the stack
       if (world.USB.includes('}')) {
-        var message = tryParseeBrainResponse(world.USB);
-        if (message && USBcallbacks[message.id]) {
-          // Here, actually call the cb
-          if(message.status === 'accepted'){
-            USBcallbacks[message.id]('started', message);
-          } else if(message.status === 'complete'){
-            USBcallbacks[message.id]('complete', message);
-            delete USBcallbacks[message.id];
+        var messages = tryParseeBrainResponse(world.USB);
+        for (i in messages.parsed) {
+          var message = messages.parsed[i];
+          if(message && message.status == 'accepted'){
+            if(USBcallbacks[message.id]){
+              USBcallbacks[message.id]('started', message);
+            }
+          }else if(message && message.status == 'complete'){
+            if(USBcallbacks[message.id]){
+              USBcallbacks[message.id]('complete', message);
+              delete USBcallbacks[message.id];
+            }
           }
+        }
+        world.USB = '';
+        if (messages.unparseable) {
+          world.USB = messages.unparseable;
         }
       }
     }
@@ -533,16 +586,60 @@ async function readLoop() {
 /**
  * Tries to parse string as json. Also verifies that it is valid as a
  * response from the eBrain (check it has an id).
- * @return The object or false
+ * NOTE: the json MUST NOT have an '}' except to end the object.
+ * @return An object of form {parsed, unparseable}, where parseable is a 
+ * list of all parseable objects and, unparseable is a string representing what remaining
+ * bits couldn't be parsed (if such exists).
 */
 function tryParseeBrainResponse(jsonString) {
-  try {
-    var response = JSON.parse(jsonString);
-    if (response && typeof response === "object" && response.id) {
-      return response;
+  var out = {parsed: []};
+
+  // First, try and split if there are multiple objects being returned
+  var jsons = splitJsonStrings(jsonString);
+  for (var i = 0; i < jsons.length; i++) {
+    try {
+      var response = JSON.parse(jsons[i]);
+      if (response && typeof response === "object" && response.id) {
+        out.parsed.push(response);
+      }
+    } catch (e) {
+      // Only add a str to unparseable if it's at the end.
+      if (i == jsons.length - 1) {
+        out.unparseable = jsons[i];
+      }
     }
-  } catch (e) {}
-  return false;
+  }
+  return out;
+}
+
+/**
+ * NOTE: the json strings must not have '{' or '}' except at the start/end.
+ * @param jsonString String with JSON strings, and possibly some incomplete ones. 
+ * @returns List of the json strings (trimmed), with the last element being the 
+ * remaining string if there is any. This means if there's a partial bit of
+ * JSON and then a complete object, that partial bit at the start gets rejected.
+ */
+function splitJsonStrings(jsonString) {
+  var out = [];
+  var startIndex = jsonString.indexOf('{');
+  var endIndex = jsonString.indexOf('}');
+  while (endIndex >= 0) {
+    // check for stray '{' within the indices found 
+    var nextStart = jsonString.indexOf('{', startIndex + 1);
+    if (nextStart > 0 && nextStart < endIndex) {
+      // If stray '{', trim off that part and continue
+      jsonString = jsonString.substring(nextStart);
+      startIndex = nextStart;
+    } else {
+      out.push(jsonString.substring(0, endIndex + 1).trim());
+      jsonString = jsonString.substring(endIndex + 1);
+      endIndex = jsonString.indexOf('}');
+    }
+  }
+  if (jsonString.length > 0) {
+    out.push(jsonString);
+  }
+  return out;
 }
 
 function writeToStream(...lines) {
