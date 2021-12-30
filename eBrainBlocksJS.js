@@ -26,6 +26,7 @@ var ParentEveBrain = function() {
   this.digitalSensor = [];
   this.robot_state = 'idle';
   this.cbs = {};
+  this.analogSensor = {level: null};
 }
 
 ParentEveBrain.prototype = {
@@ -39,6 +40,20 @@ ParentEveBrain.prototype = {
         self.digitalSensor[pin_number] = msg.msg;
       }
     });
+  },
+
+  analogInput: function(pin_number, cb){
+    var self = this;
+    this.send({cmd: 'analogInput', arg:pin_number}, function(state, msg){
+      if(state === 'complete' && undefined != msg){
+        self.analogSensor.level = msg.msg;
+        cb(state, msg);
+      }
+    });
+  },
+
+  gpio: function(pin, pin_state, cb){
+    this.send({cmd: pin_state[0], arg:pin}, cb);
   },
 
   move: function(direction, distance, cb){
@@ -101,7 +116,6 @@ var EveBrain = function(url){
   this.cbs = {};
   this.listeners = [];
   this.sensorState = {follow: null, collide: null};
-  this.analogSensor = {level: null};
   this.wifiNetworks = {};
   this.ipAddress = {};
   this.distanceSensor = {level: null};
@@ -233,22 +247,9 @@ EveBrain.prototype = {
     }
   },
 
-  // note: movement function are in the ParentEveBrain.
+  // note: many functions are in the ParentEveBrain.
 
   //EveOneCommands
-  gpio: function(pin, pin_state, cb){
-    this.send({cmd: pin_state[0], arg:pin}, cb);
-  },
-
-  analogInput: function(pin_number, cb){
-    var self = this;
-    this.send({cmd: 'analogInput', arg:pin_number}, function(state, msg){
-      if(state === 'complete' && undefined != msg){
-        self.analogSensor.level = msg.msg;
-        cb(self.analogSensor.level);
-      }
-    });
-  },
 
   analogInputPCF: function(pin_number, cb){
     var self = this;
@@ -631,11 +632,12 @@ function splitJsonStrings(jsonString) {
       jsonString = jsonString.substring(nextStart);
       startIndex = nextStart;
     } else {
-      out.push(jsonString.substring(0, endIndex + 1).trim());
+      out.push(jsonString.substring(startIndex, endIndex + 1).trim());
       jsonString = jsonString.substring(endIndex + 1);
       endIndex = jsonString.indexOf('}');
     }
   }
+  // At the end, keep any remaining text (could be start of next json)
   if (jsonString.length > 0) {
     out.push(jsonString);
   }
