@@ -56,6 +56,14 @@ ParentEveBrain.prototype = {
     this.send({cmd: pin_state[0], arg:pin}, cb);
   },
 
+  gpio_pwm: function(pin_select,pin_value, cb){
+    this.send({cmd: pin_select, arg:pin_value}, cb);
+  },
+
+  beep: function(note,duration,cb){
+    this.send({cmd: 'beep' , arg: note + ',' + duration*1000}, cb);
+  },
+
   move: function(direction, distance, cb){
     // If we pass this first check, distance is a number or a string parseable as such
     if (!(typeof distance === 'number' || !isNaN(distance))) {
@@ -291,16 +299,8 @@ EveBrain.prototype = {
     });
   },
 
-  gpio_pwm: function(pin_select,pin_value, cb){
-    this.send({cmd: pin_select, arg:pin_value}, cb);
-  },
-
   servo: function(angle, cb){
     this.send({cmd: 'servo', arg:angle}, cb);
-  },
-
-  beep: function(note,duration,cb){
-    this.send({cmd: 'beep' , arg:[note,duration*1000]}, cb);
   },
 
   pause: function(cb){
