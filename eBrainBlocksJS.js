@@ -32,6 +32,10 @@ var ParentEveBrain = function() {
 ParentEveBrain.prototype = {
   constructor: ParentEveBrain,
 
+  connect_to_network: function(SSID, PASS, callback) {
+    this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
+  },
+
   digitalInput: function(pin_number, cb){
     var self = this;
     this.send({cmd: 'digitalInput', arg:pin_number}, function(state, msg){
@@ -61,7 +65,7 @@ ParentEveBrain.prototype = {
   },
 
   beep: function(note,duration,cb){
-    this.send({cmd: 'beep' , arg: note + ',' + duration*1000}, cb);
+    this.send({cmd: 'beep' , arg: [note, duration*1000]}, cb);
   },
 
   move: function(direction, distance, cb){
@@ -343,7 +347,9 @@ EveBrain.prototype = {
     if(cb){
       this.cbs[msg.id] = cb;
     }
-    if(msg.arg){ msg.arg = msg.arg.toString(); }
+    if(msg.arg && msg.arg.toString() != '[object Object]') {
+      msg.arg = msg.arg.toString();
+    }
     if(['stop', 'pause', 'resume', 'ping', 'version'].indexOf(msg.cmd) >= 0){
       this.send_msg(msg);
     }else{
@@ -461,7 +467,9 @@ EveBrainUSB.prototype.send = function(message, callback) {
 
   message = filterUnicode(message);
   message.id = Math.random().toString(36).substr(2, 10);
-  
+  if(message.arg && message.arg.toString() != '[object Object]') {
+    message.arg = message.arg.toString();
+  }
   // We make a new callback that sets this.robot_state because the
   // loop that calls the callbacks is in a global function, so there's
   // no easy way to have it set this.robot_state (without it being a total kludge).
