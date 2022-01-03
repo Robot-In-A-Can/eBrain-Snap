@@ -1,6 +1,7 @@
 var escapable = /[\x00-\x1f\ud800-\udfff\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufff0-\uffff]/g;
 var attempts = 0;
 var eb;
+var ebUSB;
 
 function filterUnicode(quoted){
 
@@ -30,6 +31,7 @@ var ParentEveBrain = function() {
   this.distanceSensor = {level: null};
   this.tempSensor = {level: null};
   this.humidSensor = {level: null};
+  this.ipAddress = null;
 }
 
 ParentEveBrain.prototype = {
@@ -101,6 +103,16 @@ ParentEveBrain.prototype = {
     this.send({cmd: 'beep' , arg: [note, duration*1000]}, cb);
   },
 
+  getIp: function(cb){
+    var self = this;
+    this.send({cmd: 'getConfig'}, function(state, msg) {
+      cb(state, msg);
+      if(state === 'complete' && undefined != msg){
+        self.ipAddress = msg.msg.sta_ip; 
+      }
+    });
+  },
+
   setServo: function(servoNum, angle, callback) {
     if (servoNum == 1) { // This is delierately a loose comparison
       this.send({cmd: "servo", arg: angle}, callback);
@@ -170,7 +182,6 @@ var EveBrain = function(url){
   this.listeners = [];
   this.sensorState = {follow: null, collide: null};
   this.wifiNetworks = {};
-  this.ipAddress = {};
 }
 
 EveBrain.prototype = {
@@ -340,15 +351,6 @@ EveBrain.prototype = {
     });
   },
 
-  getIp: function(cb){
-    var self = this;
-    this.send({cmd: 'getConfig'}, function(state, msg){
-      if(state === 'complete' && undefined != msg){
-        cb(msg.msg);
-      }
-    });
-  },
-
   send: function(msg, cb){
     msg = filterUnicode(msg);
     msg.id = Math.random().toString(36).substring(2, 12);
@@ -437,7 +439,7 @@ EveBrain.prototype = {
       console.log('in stop callback');
       if(state === 'complete' && !recursion){
         for(var i in self.cbs){
-          console.log('calling callback ' + self.cbs[i]);
+          // console.log('calling callback ' + self.cbs[i]);
           self.cbs[i]('complete', undefined, true);
         }
         self.robot_state = 'idle';
@@ -459,6 +461,7 @@ for (parentMemberName in ParentEveBrain.prototype) {
 var EveBrainUSB = function() {
   ParentEveBrain.call(this);
   this.cbs = USBcallbacks;
+  this.connected = false;
 };
 
 EveBrainUSB.prototype = Object.create(ParentEveBrain.prototype);
@@ -508,6 +511,21 @@ EveBrainUSB.prototype.stop = function(){
       }
       self.robot_state = 'idle';
       self.clearMessagesCallbacks();
+    }
+  });
+}
+
+/**
+ * Tests the connection. If the robot is connected, will
+ * (async) set this.connected = true (once the robot responds).
+ * Sets this.connected = false at the start.
+ */
+EveBrainUSB.prototype.testConnection = function() {
+  this.connected = false;
+  var self = this;
+  this.send({cmd: "version"}, function(status, msg) {
+    if (status === 'complete') {
+      self.connected = true;
     }
   });
 }
@@ -569,8 +587,9 @@ async function readLoop() {
       // and remove the message from the stack
       if (world.USB.includes('}')) {
         var messages = tryParseeBrainResponse(world.USB);
-        for (i in messages.parsed) {
+        for (var i = 0; i < messages.parsed.length; i++ ) {
           var message = messages.parsed[i];
+
           if(message && message.status == 'accepted'){
             if(USBcallbacks[message.id]){
               USBcallbacks[message.id]('started', message);
@@ -606,10 +625,11 @@ async function readLoop() {
  * bits couldn't be parsed (if such exists).
 */
 function tryParseeBrainResponse(jsonString) {
+  // console.log('in tryparse. Input: ' + jsonString);
   var out = {parsed: []};
 
   // First, try and split if there are multiple objects being returned
-  var jsons = splitJsonStrings(jsonString);
+  var jsons = jsonString.split('\r\n');
   for (var i = 0; i < jsons.length; i++) {
     try {
       var response = JSON.parse(jsons[i]);
@@ -622,37 +642,6 @@ function tryParseeBrainResponse(jsonString) {
         out.unparseable = jsons[i];
       }
     }
-  }
-  return out;
-}
-
-/**
- * NOTE: the json strings must not have '{' or '}' except at the start/end.
- * @param jsonString String with JSON strings, and possibly some incomplete ones. 
- * @returns List of the json strings (trimmed), with the last element being the 
- * remaining string if there is any. This means if there's a partial bit of
- * JSON and then a complete object, that partial bit at the start gets rejected.
- */
-function splitJsonStrings(jsonString) {
-  var out = [];
-  var startIndex = jsonString.indexOf('{');
-  var endIndex = jsonString.indexOf('}');
-  while (endIndex >= 0) {
-    // check for stray '{' within the indices found 
-    var nextStart = jsonString.indexOf('{', startIndex + 1);
-    if (nextStart > 0 && nextStart < endIndex) {
-      // If stray '{', trim off that part and continue
-      jsonString = jsonString.substring(nextStart);
-      startIndex = nextStart;
-    } else {
-      out.push(jsonString.substring(startIndex, endIndex + 1).trim());
-      jsonString = jsonString.substring(endIndex + 1);
-      endIndex = jsonString.indexOf('}');
-    }
-  }
-  // At the end, keep any remaining text (could be start of next json)
-  if (jsonString.length > 0) {
-    out.push(jsonString);
   }
   return out;
 }
