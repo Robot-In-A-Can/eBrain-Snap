@@ -68,6 +68,14 @@ ParentEveBrain.prototype = {
     this.send({cmd: 'beep' , arg: [note, duration*1000]}, cb);
   },
 
+  setServo: function(servoNum, angle, callback) {
+    if (servoNum == 1) { // This is delierately a loose comparison
+      this.send({cmd: "servo", arg: angle}, callback);
+    } else if (servoNum == 2) {
+      this.send({cmd: "servoII", arg: angle}, callback);
+    }
+  },
+
   move: function(direction, distance, cb){
     // If we pass this first check, distance is a number or a string parseable as such
     if (!(typeof distance === 'number' || !isNaN(distance))) {
@@ -343,7 +351,7 @@ EveBrain.prototype = {
 
   send: function(msg, cb){
     msg = filterUnicode(msg);
-    msg.id = Math.random().toString(36).substr(2, 10);
+    msg.id = Math.random().toString(36).substring(2, 12);
     if(cb){
       this.cbs[msg.id] = cb;
     }
@@ -466,7 +474,7 @@ EveBrainUSB.prototype.send = function(message, callback) {
   }
 
   message = filterUnicode(message);
-  message.id = Math.random().toString(36).substr(2, 10);
+  message.id = Math.random().toString(36).substring(2, 12);
   if(message.arg && message.arg.toString() != '[object Object]') {
     message.arg = message.arg.toString();
   }
@@ -523,8 +531,8 @@ async function USBconnect() {
   outputDone = encoder.readable.pipeTo(world.port.writable);
   world.outputStream = encoder.writable;
 
-  // CODELAB: Send CTRL-C and turn off echo on REPL
-  writeToStream(' {cmd: "version", id: "k1q6if75si"} ');
+  // Send version command to eBrain
+  writeToStream(' {cmd: "version", id: "' + Math.random().toString(36).substring(2, 12) + ' "} ');
 
   // Make stream
   let decoder = new TextDecoderStream();
@@ -554,9 +562,6 @@ async function readLoop() {
   while (true) {
     const { value, done } = await world.reader.read();
     if (value) {
-      /*if(value.includes('{')){
-        world.USB = '';
-      }*/
       world.USB += value;
       console.log (value + '\n');
 
