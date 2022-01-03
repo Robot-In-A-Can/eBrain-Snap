@@ -18,7 +18,7 @@ function filterUnicode(quoted){
  * call the send_msg function, which subclasses need to define.
  * Methods required to implement: send, clearMessagesCallbacks.
  * 
- * NOTE: the standard API for callbacks is: state (usually started 
+ * NOTE: the API for callbacks here is: state (usually started 
  * or complete), message (the returned message from the robot), optional.
  * Optional is not passed usually, so it is undefined (except when stop() is used).
  */
@@ -27,6 +27,9 @@ var ParentEveBrain = function() {
   this.robot_state = 'idle';
   this.cbs = {};
   this.analogSensor = {level: null};
+  this.distanceSensor = {level: null};
+  this.tempSensor = {level: null};
+  this.humidSensor = {level: null};
 }
 
 ParentEveBrain.prototype = {
@@ -62,6 +65,36 @@ ParentEveBrain.prototype = {
 
   gpio_pwm: function(pin_select,pin_value, cb){
     this.send({cmd: pin_select, arg:pin_value}, cb);
+  },
+
+  distanceInput: function(cb){
+    var self = this;
+    this.send({cmd: 'distanceSensor'}, function(state, msg){
+      cb(state, msg);
+      if(state === 'complete' && undefined != msg){
+        self.distanceSensor.level = msg.msg;
+      }
+    });
+  },
+
+  temperature: function(cb){
+    var self = this;
+    this.send({cmd: 'temperature'}, function(state, msg){
+      cb(state, msg);
+      if(state === 'complete' && undefined != msg){
+        self.tempSensor.level = msg.msg;
+      }
+    });
+  },
+
+  humidity: function(cb){
+    var self = this;
+    this.send({cmd: 'humidity'}, function(state, msg){
+      cb(state, msg);
+      if(state === 'complete' && undefined != msg){
+        self.humidSensor.level = msg.msg;
+      }
+    });
   },
 
   beep: function(note,duration,cb){
@@ -138,9 +171,6 @@ var EveBrain = function(url){
   this.sensorState = {follow: null, collide: null};
   this.wifiNetworks = {};
   this.ipAddress = {};
-  this.distanceSensor = {level: null};
-  this.tempSensor = {level: null};
-  this.humidSensor = {level: null};
 }
 
 EveBrain.prototype = {
@@ -277,36 +307,6 @@ EveBrain.prototype = {
       if(state === 'complete' && undefined != msg){
         self.analogSensor.level = msg.msg;
         cb(self.analogSensor.level);
-      }
-    });
-  },
-
-  temperature: function(cb){
-    var self = this;
-    this.send({cmd: 'temperature'}, function(state, msg){
-      if(state === 'complete' && undefined != msg){
-        self.tempSensor.level = msg.msg;
-        cb(self.tempSensor.level);
-      }
-    });
-  },
-
-  humidity: function(cb){
-    var self = this;
-    this.send({cmd: 'humidity'}, function(state, msg){
-      if(state === 'complete' && undefined != msg){
-        self.humidSensor.level = msg.msg;
-        cb(self.humidSensor.level);
-      }
-    });
-  },
-
-  distanceInput: function(cb){
-    var self = this;
-    this.send({cmd: 'distanceSensor'}, function(state, msg){
-      if(state === 'complete' && undefined != msg){
-        self.distanceSensor.level = msg.msg;
-        cb(self.distanceSensor.level);
       }
     });
   },
