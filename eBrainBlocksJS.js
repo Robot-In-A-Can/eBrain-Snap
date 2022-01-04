@@ -536,9 +536,6 @@ async function USBconnect() {
   outputDone = encoder.readable.pipeTo(world.port.writable);
   world.outputStream = encoder.writable;
 
-  // Send version command to eBrain
-  writeToStream(' {cmd: "version", id: "' + Math.random().toString(36).substring(2, 12) + ' "} ');
-
   // Make stream
   let decoder = new TextDecoderStream();
   inputDone = world.port.readable.pipeTo(decoder.writable);
