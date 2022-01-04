@@ -31,7 +31,7 @@ var ParentEveBrain = function() {
   this.distanceSensor = {level: null};
   this.tempSensor = {level: null};
   this.humidSensor = {level: null};
-  this.ipAddress = null;
+  this.config = null;
 }
 
 ParentEveBrain.prototype = {
@@ -103,13 +103,13 @@ ParentEveBrain.prototype = {
     this.send({cmd: 'beep' , arg: [note, duration*1000]}, cb);
   },
 
-  getIp: function(cb){
+  getConfig: function(callback) {
     var self = this;
     this.send({cmd: 'getConfig'}, function(state, msg) {
-      cb(state, msg);
       if(state === 'complete' && undefined != msg){
-        self.ipAddress = msg.msg.sta_ip; 
+        self.config = msg.msg;
       }
+      callback(state, msg);
     });
   },
 
