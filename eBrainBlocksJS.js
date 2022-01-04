@@ -17,7 +17,7 @@ function filterUnicode(quoted){
  * ParentEveBrain has the movement functions (move, turn,
  * forward, etc) and digitalInput. These functions then 
  * call the send function, which subclasses need to define.
- * Methods required to implement: send, clearMessagesCallbacks.
+ * Methods required to implement: send_msg.
  * 
  * NOTE: the API for callbacks here is: state (usually started 
  * or complete), message (the returned message from the robot), optional.
@@ -27,6 +27,7 @@ var ParentEveBrain = function() {
   this.digitalSensor = [];
   this.robot_state = 'idle';
   this.cbs = {};
+  this.msg_stack = [];
   this.analogSensor = {level: null};
   this.distanceSensor = {level: null};
   this.tempSensor = {level: null};
@@ -36,6 +37,58 @@ var ParentEveBrain = function() {
 
 ParentEveBrain.prototype = {
   constructor: ParentEveBrain,
+
+  /**
+   * Deals with the callback, and queues up the message to be sent to ebrain.
+   * If the command is not 'important' (ie not 'stop', etc) it is queued up.
+   * The subclasses must call process_msg_queue when the robot is idle to
+   * make sure queued messages are indeed sent, and must shift() the queue once 
+   * a response is received.
+   * @param msg Message to send
+   * @param cb callback for message
+   */
+  send: function(msg, cb){
+    msg = filterUnicode(msg);
+    msg.id = Math.random().toString(36).substring(2, 12);
+    if(cb){
+      this.cbs[msg.id] = cb;
+    }
+    if(msg.arg && msg.arg.toString() != '[object Object]') {
+      msg.arg = msg.arg.toString();
+    }
+    if(['stop', 'pause', 'resume', 'ping', 'version'].indexOf(msg.cmd) >= 0){
+      this.send_msg(msg);
+    }else{
+      this.msg_stack.push(msg);
+      this.process_msg_queue();
+    }
+  },
+
+  process_msg_queue: function(){
+    if(this.robot_state === 'idle' && this.msg_stack.length > 0){
+      this.robot_state = 'receiving';
+      this.send_msg(this.msg_stack[0]);
+    }
+  },
+
+  clearMessagesCallbacks: function() {
+    this.cbs = {};
+    this.msg_stack = [];
+  },
+
+  stop: function(){
+    var self = this;
+    this.send({cmd:'stop'}, function(state, msg, recursion){
+      if(state === 'complete' && !recursion){
+        for(var i in self.cbs){
+          // console.log('calling callback ' + self.cbs[i]);
+          self.cbs[i]('complete', undefined, true);
+        }
+        self.robot_state = 'idle';
+        self.clearMessagesCallbacks();
+      }
+    });
+  },
 
   connect_to_network: function(SSID, PASS, callback) {
     this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
@@ -289,11 +342,6 @@ EveBrain.prototype = {
     this.listeners.push(listener);
   },
 
-  clearMessagesCallbacks: function() {
-    this.cbs = {};
-    this.msg_stack = [];
-  },
-
   handleError: function(err){
     if(err instanceof CloseEvent || err === 'Timeout'){
       if(this.ws.readyState === WebSocket.OPEN){
@@ -351,23 +399,6 @@ EveBrain.prototype = {
     });
   },
 
-  send: function(msg, cb){
-    msg = filterUnicode(msg);
-    msg.id = Math.random().toString(36).substring(2, 12);
-    if(cb){
-      this.cbs[msg.id] = cb;
-    }
-    if(msg.arg && msg.arg.toString() != '[object Object]') {
-      msg.arg = msg.arg.toString();
-    }
-    if(['stop', 'pause', 'resume', 'ping', 'version'].indexOf(msg.cmd) >= 0){
-      this.send_msg(msg);
-    }else{
-      this.msg_stack.push(msg);
-      this.process_msg_queue();
-    }
-  },
-
   send_msg: function(msg){
     var self = this;
     msg = filterUnicode(msg);
@@ -376,13 +407,6 @@ EveBrain.prototype = {
       this.ws.send(JSON.stringify(msg));
     }
     this.timeoutTimer = window.setTimeout(function(){ self.handleError("Timeout") }, 3000);
-  },
-
-  process_msg_queue: function(){
-    if(this.robot_state === 'idle' && this.msg_stack.length > 0){
-      this.robot_state = 'receiving';
-      this.send_msg(this.msg_stack[0]);
-    }
   },
 
   handle_ws: function(ws_msg){
@@ -433,21 +457,6 @@ EveBrain.prototype = {
     }
   },
 
-  stop: function(){
-    var self = this;
-    this.send({cmd:'stop'}, function(state, msg, recursion){
-      console.log('in stop callback');
-      if(state === 'complete' && !recursion){
-        for(var i in self.cbs){
-          // console.log('calling callback ' + self.cbs[i]);
-          self.cbs[i]('complete', undefined, true);
-        }
-        self.robot_state = 'idle';
-        self.clearMessagesCallbacks();
-      }
-    });
-  },
-
   robot_state: 'idle',
   msg_stack: []
 }
@@ -471,22 +480,9 @@ Object.defineProperty(EveBrainUSB.prototype, 'constructor', {
   writable: true
 });
 
-EveBrainUSB.prototype.send = function(message, callback) {
-  if(['stop', 'pause', 'resume', 'ping', 'version'].indexOf(message.cmd) < 0 && this.robot_state !== 'idle'){
-    throw new Error('Cannot call multiple commands at once on USB');
-  }
-
+EveBrainUSB.prototype.send_msg = function(message, callback) {
   message = filterUnicode(message);
-  message.id = Math.random().toString(36).substring(2, 12);
-  if(message.arg && message.arg.toString() != '[object Object]') {
-    message.arg = message.arg.toString();
-  }
-  this.cbs[message.id] = callback;
-  writeToStream(JSON.stringify(message)); // Write the message at the end to avoid a race with the add to callback
-}
-
-EveBrainUSB.prototype.clearMessagesCallbacks = function() {
-  this.cbs = {};
+  writeToStream(JSON.stringify(message));
 }
 
 /**
@@ -501,25 +497,14 @@ EveBrainUSB.prototype.doCallback = function(message) {
       this.cbs[message.id]('started', message);
     }
   } else if(message && message.status == 'complete'){
-    this.robot_state = 'idle';
     if(this.cbs[message.id]){
       this.cbs[message.id]('complete', message);
       delete this.cbs[message.id];
     }
+    this.robot_state = 'idle';
+    this.msg_stack.shift(); // Pop message off queue
+    this.process_msg_queue();
   }
-}
-
-EveBrainUSB.prototype.stop = function(){
-  var self = this;
-  this.send({cmd:'stop'}, function(state, msg, recursion){
-    if(state === 'complete' && !recursion){
-      for(var i in self.cbs){
-        self.cbs[i]('complete', undefined, true);
-      }
-      self.robot_state = 'idle';
-      self.clearMessagesCallbacks();
-    }
-  });
 }
 
 /**
@@ -602,15 +587,13 @@ async function readLoop() {
 }
 
 /**
- * Tries to parse string as json. Also verifies that it is valid as a
- * response from the eBrain (check it has an id).
- * NOTE: the json MUST NOT have an '}' except to end the object.
+ * Tries to parse string as json. Also verifies that it is valid (check it has an id).
+ * NOTE: the json MUST end with '\r\n'
  * @return An object of form {parsed, unparseable}, where parseable is a 
  * list of all parseable objects and, unparseable is a string representing what remaining
  * bits couldn't be parsed (if such exists).
 */
 function tryParseeBrainResponse(jsonString) {
-  // console.log('in tryparse. Input: ' + jsonString);
   var out = {parsed: []};
 
   // First, try and split if there are multiple objects being returned
