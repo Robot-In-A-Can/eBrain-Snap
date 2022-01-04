@@ -16,7 +16,7 @@ function filterUnicode(quoted){
 /**
  * ParentEveBrain has the movement functions (move, turn,
  * forward, etc) and digitalInput. These functions then 
- * call the send_msg function, which subclasses need to define.
+ * call the send function, which subclasses need to define.
  * Methods required to implement: send, clearMessagesCallbacks.
  * 
  * NOTE: the API for callbacks here is: state (usually started 
@@ -460,7 +460,7 @@ for (parentMemberName in ParentEveBrain.prototype) {
 
 var EveBrainUSB = function() {
   ParentEveBrain.call(this);
-  this.cbs = USBcallbacks;
+  this.cbs = {};
   this.connected = false;
 };
 
@@ -481,25 +481,32 @@ EveBrainUSB.prototype.send = function(message, callback) {
   if(message.arg && message.arg.toString() != '[object Object]') {
     message.arg = message.arg.toString();
   }
-  // We make a new callback that sets this.robot_state because the
-  // loop that calls the callbacks is in a global function, so there's
-  // no easy way to have it set this.robot_state (without it being a total kludge).
-  var self = this;
-  var newCallback = function(state, message, optional) {
-    callback(state, message, optional);
-    if (state == 'complete') {
-      self.robot_state = 'idle';
-    } else if (state == 'started') {
-      self.robot_state = 'running';
-    }
-  }
-  addToUSBCallbacks(message.id, newCallback);
+  this.cbs[message.id] = callback;
   writeToStream(JSON.stringify(message)); // Write the message at the end to avoid a race with the add to callback
 }
 
 EveBrainUSB.prototype.clearMessagesCallbacks = function() {
-  USBcallbacks = {};
-  this.cbs = USBcallbacks;
+  this.cbs = {};
+}
+
+/**
+ * Runs the callback associated with the given message and manages
+ * the robot's state.
+ * @param message Message from ebrain
+ */
+EveBrainUSB.prototype.doCallback = function(message) {
+  if(message && message.status == 'accepted') {
+    this.robot_state = 'running';
+    if(this.cbs[message.id]){
+      this.cbs[message.id]('started', message);
+    }
+  } else if(message && message.status == 'complete'){
+    this.robot_state = 'idle';
+    if(this.cbs[message.id]){
+      this.cbs[message.id]('complete', message);
+      delete this.cbs[message.id];
+    }
+  }
 }
 
 EveBrainUSB.prototype.stop = function(){
@@ -530,11 +537,6 @@ EveBrainUSB.prototype.testConnection = function() {
   });
 }
 
-// Add the movement functions to the prototype
-for (parentMemberName in ParentEveBrain.prototype) {
-  EveBrainUSB.prototype[parentMemberName] = ParentEveBrain.prototype[parentMemberName];
-}
-
 let inputDone;
 let outputDone;
 
@@ -561,19 +563,11 @@ async function USBconnect() {
   readLoop(); // Start infinite read loop
 }
 
-USBcallbacks = {};
-
-function addToUSBCallbacks(id, callback) {
-  USBcallbacks[id] = callback;
-}
-
 /**
  * This reads from the serial in a loop, and 
- * runs the given callbacks (from USBcallbacks) if the 
- * ID matches. Deletes the callback if the status is 'complete'
+ * runs the given callbacks (using ebUSB).
  */
 async function readLoop() {
-  var log;
   world.USB = '';
   console.log("USB Reader Listening...");
 
@@ -589,16 +583,8 @@ async function readLoop() {
         var messages = tryParseeBrainResponse(world.USB);
         for (var i = 0; i < messages.parsed.length; i++ ) {
           var message = messages.parsed[i];
-
-          if(message && message.status == 'accepted'){
-            if(USBcallbacks[message.id]){
-              USBcallbacks[message.id]('started', message);
-            }
-          }else if(message && message.status == 'complete'){
-            if(USBcallbacks[message.id]){
-              USBcallbacks[message.id]('complete', message);
-              delete USBcallbacks[message.id];
-            }
+          if (ebUSB) {
+            ebUSB.doCallback(message);
           }
         }
         world.USB = '';
@@ -613,7 +599,6 @@ async function readLoop() {
       break;
     }
   }
-  //return log;
 }
 
 /**
@@ -654,5 +639,4 @@ function writeToStream(...lines) {
     writer.write(line + '\n');
   });
   writer.releaseLock();
-
 }
