@@ -33,6 +33,7 @@ var ParentEveBrain = function() {
   this.tempSensor = {level: null};
   this.humidSensor = {level: null};
   this.config = null;
+  this.sensorState = {follow: null, collide: null}; // can potentially remove follow,collide
 }
 
 ParentEveBrain.prototype = {
@@ -88,6 +89,17 @@ ParentEveBrain.prototype = {
         self.clearMessagesCallbacks();
       }
     });
+  },
+  /**
+   * Initiates wifi scan.
+   * @param {function} callback Called when info on the WiFi networks is received.
+   */
+  wifiScan: function(callback) {
+    var self = this;
+    this.send({cmd: "startWifiScan"}, null); // don't need a callback when the scan has started
+    this.cbs['wifiScan'] = function(state, message) {
+      callback(state, message); // chain given callback
+    }
   },
 
   connect_to_network: function(SSID, PASS, callback) {
@@ -233,7 +245,6 @@ var EveBrain = function(url){
   this.connect();
   this.cbs = {};
   this.listeners = [];
-  this.sensorState = {follow: null, collide: null};
   this.wifiNetworks = {};
 }
 
@@ -390,15 +401,6 @@ EveBrain.prototype = {
     this.send({cmd:'version'}, cb);
   },
 
-  getNetworks: function(cb){
-    var self = this;
-    this.send({cmd: 'startWifiScan'}, function(state, msg){
-      if(state === 'notify' && undefined != msg){
-        cb(msg.msg);
-      }
-    });
-  },
-
   send_msg: function(msg){
     var self = this;
     msg = filterUnicode(msg);
@@ -420,6 +422,10 @@ EveBrain.prototype = {
       if(msg.status === 'notify'){
         this.broadcast(msg.id);
         this.sensorState[msg.id] = msg.msg;
+        if (this.cbs[msg.id]) {
+          this.cbs[msg.id]('notify', msg);
+          delete this.cbs[msg.id];
+        }
         return;
       }
       if(this.msg_stack.length > 0 && this.msg_stack[0].id == msg.id){
@@ -502,8 +508,15 @@ EveBrainUSB.prototype.doCallback = function(message) {
       delete this.cbs[message.id];
     }
     this.robot_state = 'idle';
-    this.msg_stack.shift(); // Pop message off queue
+    this.msg_stack.shift(); // Pop message that prompted this response off queue
     this.process_msg_queue();
+  } else if(message && message.status === 'notify'){
+    this.sensorState[message.id] = message.msg;
+    if (this.cbs[message.id]) {
+      this.cbs[message.id]('notify', message);
+      delete this.cbs[message.id];
+    }
+    return;
   }
 }
 
