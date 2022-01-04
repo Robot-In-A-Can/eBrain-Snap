@@ -537,6 +537,7 @@ EveBrainUSB.prototype.testConnection = function() {
 
 let inputDone;
 let outputDone;
+world.outputStream = undefined; // Set this to undefined so it is easy to check for its existence
 
 async function USBconnect() {
   // Request & open port here.
