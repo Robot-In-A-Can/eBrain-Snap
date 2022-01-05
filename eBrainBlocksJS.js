@@ -33,7 +33,7 @@ var ParentEveBrain = function() {
   this.tempSensor = {level: null};
   this.humidSensor = {level: null};
   this.config = null;
-  this.sensorState = {follow: null, collide: null}; // can potentially remove follow,collide
+  this.sensorState = {};
 }
 
 ParentEveBrain.prototype = {
@@ -104,6 +104,14 @@ ParentEveBrain.prototype = {
 
   connect_to_network: function(SSID, PASS, callback) {
     this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
+  },
+
+  postToServer: function (onOff, server_host, sec, callback) {
+    onOff = onOff === 'On' ? 1 : 0;
+    this.send({
+      cmd: "postToServer",
+      arg: { "onOff": onOff, "server": server_host, "time": sec }
+    }, callback);
   },
 
   digitalInput: function(pin_number, cb){
@@ -381,17 +389,13 @@ EveBrain.prototype = {
     });
   },
 
-  servo: function(angle, cb){
-    this.send({cmd: 'servo', arg:angle}, cb);
-  },
-
-  pause: function(cb){
+  /*pause: function(cb){
     this.send({cmd:'pause'}, cb);
   },
 
   resume: function(cb){
     this.send({cmd:'resume'}, cb);
-  },
+  },*/
 
   ping: function(cb){
     this.send({cmd:'ping'}, cb);
