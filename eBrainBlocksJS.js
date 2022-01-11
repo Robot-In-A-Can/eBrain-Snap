@@ -33,6 +33,7 @@ var ParentEveBrain = function() {
   this.tempSensor = {level: null};
   this.humidSensor = {level: null};
   this.config = null;
+  this.sensorState = {};
 }
 
 ParentEveBrain.prototype = {
@@ -89,9 +90,28 @@ ParentEveBrain.prototype = {
       }
     });
   },
+  /**
+   * Initiates wifi scan.
+   * @param {function} callback Called when info on the WiFi networks is received.
+   */
+  wifiScan: function(callback) {
+    var self = this;
+    this.send({cmd: "startWifiScan"}, null); // don't need a callback when the scan has started
+    this.cbs['wifiScan'] = function(state, message) {
+      callback(state, message); // chain given callback
+    }
+  },
 
   connect_to_network: function(SSID, PASS, callback) {
     this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
+  },
+
+  postToServer: function (onOff, server_host, sec, callback) {
+    onOff = onOff === 'On' ? 1 : 0;
+    this.send({
+      cmd: "postToServer",
+      arg: { "onOff": onOff, "server": server_host, "time": sec }
+    }, callback);
   },
 
   digitalInput: function(pin_number, cb){
@@ -233,7 +253,6 @@ var EveBrain = function(url){
   this.connect();
   this.cbs = {};
   this.listeners = [];
-  this.sensorState = {follow: null, collide: null};
   this.wifiNetworks = {};
 }
 
@@ -370,17 +389,13 @@ EveBrain.prototype = {
     });
   },
 
-  servo: function(angle, cb){
-    this.send({cmd: 'servo', arg:angle}, cb);
-  },
-
-  pause: function(cb){
+  /*pause: function(cb){
     this.send({cmd:'pause'}, cb);
   },
 
   resume: function(cb){
     this.send({cmd:'resume'}, cb);
-  },
+  },*/
 
   ping: function(cb){
     this.send({cmd:'ping'}, cb);
@@ -388,15 +403,6 @@ EveBrain.prototype = {
 
   version: function(cb){
     this.send({cmd:'version'}, cb);
-  },
-
-  getNetworks: function(cb){
-    var self = this;
-    this.send({cmd: 'startWifiScan'}, function(state, msg){
-      if(state === 'notify' && undefined != msg){
-        cb(msg.msg);
-      }
-    });
   },
 
   send_msg: function(msg){
@@ -420,6 +426,10 @@ EveBrain.prototype = {
       if(msg.status === 'notify'){
         this.broadcast(msg.id);
         this.sensorState[msg.id] = msg.msg;
+        if (this.cbs[msg.id]) {
+          this.cbs[msg.id]('notify', msg);
+          delete this.cbs[msg.id];
+        }
         return;
       }
       if(this.msg_stack.length > 0 && this.msg_stack[0].id == msg.id){
@@ -502,8 +512,15 @@ EveBrainUSB.prototype.doCallback = function(message) {
       delete this.cbs[message.id];
     }
     this.robot_state = 'idle';
-    this.msg_stack.shift(); // Pop message off queue
+    this.msg_stack.shift(); // Pop message that prompted this response off queue
     this.process_msg_queue();
+  } else if(message && message.status === 'notify'){
+    this.sensorState[message.id] = message.msg;
+    if (this.cbs[message.id]) {
+      this.cbs[message.id]('notify', message);
+      delete this.cbs[message.id];
+    }
+    return;
   }
 }
 
@@ -524,6 +541,7 @@ EveBrainUSB.prototype.testConnection = function() {
 
 let inputDone;
 let outputDone;
+world.outputStream = undefined; // Set this to undefined so it is easy to check for its existence
 
 async function USBconnect() {
   // Request & open port here.
@@ -535,9 +553,6 @@ async function USBconnect() {
   const encoder = new TextEncoderStream();
   outputDone = encoder.readable.pipeTo(world.port.writable);
   world.outputStream = encoder.writable;
-
-  // Send version command to eBrain
-  writeToStream(' {cmd: "version", id: "' + Math.random().toString(36).substring(2, 12) + ' "} ');
 
   // Make stream
   let decoder = new TextDecoderStream();
