@@ -1,18 +1,138 @@
 # Snap! (BYOB) History
 
-## in development for 7.0.1:
+## in development:
 
 * **New Features:**
+* **Notable Changes:**
+* **Notable Fixes:**
+* **Documentation Updates:**
+* **Translation Updates:**
+
+
+## 7.0.5:
+* **New Features:**
+    * text costumes library: new block to add a rectangular colored background with optional padding to a copy of a costume, for making "clickable buttons"
+* **Notable Changes:**
+    * improved emoji handling for "length of text" reporter, thanks, Michael!
+    * added support for EDC's Early Math Microworld extension
+* **Notable Fixes:**
+    * strings library: fixed an index range bug, thanks, Brian!
+* **Translation Updates:**
+    * Chinese, thanks, Simon!
+
+### 2022-01-14
+* v7.0.5
+
+### 2022-01-13
+* threads: improved emoji handling for "length of text" reporter, thanks, Michael!
+* extensions: added support for EDC's Early Math Microworld extension
+
+### 2022-01-10
+* new dev version
+* text costumes library: new block to add a rectangular colored background with padding to a copy of a costume
+* Chinese translation update, thanks, Simon!
+* strings library: fixed an index range bug, thanks, Brian!
+
+## 7.0.4:
+* **New Features:**
+    * syntax tree format for translatable input options and constants: "[choice]"
+    * syntax tree support for variable getter names
+* **Notable Fixes:**
+    * strings library: substrings handle negative indices as documented, thanks, Brian!
+* **Translation Updates:**
+    * Catalan library translations, thanks, Joan!
+
+### 2022-01-07
+* blocks: added syntax tree representation for variable getters
+* blocks, byob: blank-out variable getters in syntax-tree result list
+* v7.0.4
+
+### 2022-01-06
+* Catalan library translations, thanks, Joan!
+
+### 2022-01-05
+* new dev version
+* blocks: added syntax tree representation for translated input options and constants
+* strings library update, thanks, Brian!
+
+## 7.0.3:
+* **New Features:**
+    * arity control for assembling polyadic inputs using JOIN (pass a list whose first item is an integer representing the number of slots followed by the contents of those slots)
+* **Notable Changes:**
+    * same blocks with empty variadic inputs compare as equal regardless of their arity
+    * made "When I receive any messagge" non-thread-safe by default (again) to enable tail recursive broadcasts
+    * improved handling of user-defined errors and errors inside custom blocks 
+* **Notable Fixes:**
+    * fixed storing the stage name(s) - also fixes undesired translation
+    * removed distinction between number and string keys in "analyze" 
+    * fixed variable binding when broadcasting through the API, thanks, Zak!
+    * fixed programmatically hiding palette blocks using the "hide variable" block, thanks, Zak!
+    * fixed / worked around PWA caching for URLs with query parts, thanks, Ken!
+    * added missing "identical to" relabel option to "less than" reporter, thanks, Mary!
+* **Translation Updates:**
+    * Italian, thanks, Stefano!
+
+### 2022-01-04
+* manifest: fixed #2954
+* threads, blocks: added arity control for assembling polyadic inputs
+* v7.0.3
+
+### 2022-01-03
+* Italian translation update, thanks, Stefano!
+* api: fixed variable binding when broadcasting through the API, thanks, Zak!
+* objects: fixed programmatically hiding palette blocks using the "hide variable" block, thanks, Zak!
+* threads, api: made "When I receive any messagge" non-thread-safe by default (again) to enable tail recursive broadcasts
+* threads, extensions: improved handling of user-defined errors and errors inside custom blocks
+* sw.js: fixed #2957, thanks, Ken!
+* objects: fixed #2950, thanks, Mary!
+* manifest: fixed #2954
+
+### 2022-01-02
+* store: fixed storing the stage name(s)
+
+### 2022-01-01
+* extensions: removed distinction between number and string keys in "analyze"
+
+### 2021-12-22
+* new dev version
+* threads: same blocks with empty variadic inputs compare as equal regardless of their arity 
+
+## 7.0.2:
+* **Notable Fixes:**
+    * setting a clone's rotation coordinates shadows its inherited costumes
+    * preserve embedded inputs when JOINing a nested expression with an empty list
+    * improved loading custom block categories
+
+### 2021-12-21
+* prepared patch
+
+### 2021-12-20
+* blocks, threads: preserve embedded inputs when JOINing a nested expression with an empty list
+* objects: improved loading custom block categories
+
+### 2021-12-18
+* new dev version
+* objects: shadow (a clone's) costumes when setting its rotation coordinates 
+
+## 7.0.1:
 * **Notable Changes:**
     * better support for multi-byte emojis with "split" and "unicode", thanks, Michael!
     * added support for Uni Oxford (Ken Kahn's) ecraft2learn extension 
 * **Notable Fixes:**
     * keep the order of sprites in the corral when saving newly created projects
-    * allow parens in project names (again)
-* **Documentation Updates:**
-* **Translation Updates:**
+    * allow parentheses in project names (again)
+    * dropping a library or sprite file into presentation mode switches back to edit mode
+    * exporting blocks uses the project name as file name, followed by "blocks"
 
-### 2021-12-14
+### 2021-12-17
+* prepared patch
+
+### 2021-12-16
+* gui: removed some commented out code
+* gui: fixed #2941
+* byob: fixed #2945
+
+### 2021-12-15
 * threads, lists: better support for multi-byte emojis with "split" and "unicode", thanks, Michael!
 * extensions: added support for Uni Oxford (Ken Kahn's) ecraft2learn extension 
 
