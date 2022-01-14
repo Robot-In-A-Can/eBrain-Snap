@@ -20,7 +20,7 @@ Comming Soon
 
 - [Python](https://en.wikipedia.org/wiki/Python_(programming_language)) (firmware)
 - [Snap!](https://cloud.snap.berkeley.edu/) (Educational programming environment)
-- [Javascript]()
+- [Javascript](https://www.javascript.com/)
 
 ## What makes our project stand out? 
 
@@ -31,12 +31,15 @@ Robot In A Can is a new after school coding and robotics club where we help kids
 
 ## Installation
 
-- Download this Repo
-- Turn on your eBrain
+- [Download this Repo](https://github.com/Robot-In-A-Can/eBrain-Snap/)
+- Turn on your [eBrain](https://robotinacan.com/products/dev-board-1-7)
 - Connect to your eBrain's WiFi
-- Open app/Snap!.hmtl
+- Open "Launch Snap.html" 
+
+    - Alternatively jump right in an use ["Launch Snap.html"](https://raw.githack.com/Robot-In-A-Can/eBrain-Snap/develop/Snap/snap-no-logging.html) to get started right away. 
 
 ## How to use?
+
 
 
 ## Contribute
