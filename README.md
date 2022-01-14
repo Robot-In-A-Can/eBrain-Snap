@@ -1,6 +1,6 @@
 # Robot in a Can eBrain Snap!
 
-v2.0.0
+v2.0.5
 
 ![RobotLogo](./robot.png)
 
