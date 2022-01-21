@@ -106,11 +106,11 @@ ParentEveBrain.prototype = {
     this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
   },
 
-  postToServer: function (onOff, server_host, sec, callback) {
+  postToServer: function (onOff, server_host, sec, temp, dist, callback) {
     onOff = onOff === 'On' ? 1 : 0;
     this.send({
       cmd: "postToServer",
-      arg: { "onOff": onOff, "server": server_host, "time": sec }
+      arg: { "onOff": onOff, "server": server_host, "time": sec, "toggleTempHumidity":temp,"toggleDistance":dist }
     }, callback);
   },
 
