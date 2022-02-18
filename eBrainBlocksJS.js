@@ -551,7 +551,8 @@ async function USBconnect() {
 
   // on disconnect, alert user and pause Snap!
   world.port.addEventListener('disconnect', event => {
-    alert("Robot disconnected by USB!\nPlease *reconnect* using the Connect block and *unpause* after");
+    morphicAlert("Robot Disconnected!", 
+    "Robot disconnected by USB!\nPlease reconnect using the Connect block\nand unpause.");
     world.moveon = 1;
     world.children[0].stage.threads.pauseAll();
   });
@@ -644,4 +645,29 @@ function writeToStream(...lines) {
     writer.write(line + '\n');
   });
   writer.releaseLock();
+}
+
+// https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
+/**
+ * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * NOTE: this does not set the width, body text get clipped at a certain point.
+ * @param {string} title Title for the dialog
+ * @param {string} message Message in the body of the dialog
+ */
+function morphicAlert(title, message) {
+  let box = new DialogBoxMorph(); // make dialog
+  // add label (in the weirdest way imaginable)
+  box.labelString = title;
+  box.createLabel();
+  box.addButton('ok', 'Close'); // This button will close the dialog
+  const addLabel = function (text, type) {
+    let txt = new TextMorph(text);
+    // Text should be bold to match the snap style but has to be 
+    // false here, otherwise the text overflows.
+    txt.isBold = false;
+    box['add' + type](txt);
+  }
+  addLabel(message, 'Body') // do not change the second input of these
+  box.fixLayout(); // required
+  box.popUp(world); // popup box
 }
