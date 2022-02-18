@@ -549,6 +549,13 @@ async function USBconnect() {
   // Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
+  // on disconnect, alert user and pause Snap!
+  world.port.addEventListener('disconnect', event => {
+    alert("Robot disconnected by USB!\nPlease *reconnect* using the Connect block and *unpause* after");
+    world.moveon = 1;
+    world.children[0].stage.threads.pauseAll();
+  });
+
   // Setup the output stream
   const encoder = new TextEncoderStream();
   outputDone = encoder.readable.pipeTo(world.port.writable);
