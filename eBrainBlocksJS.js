@@ -345,6 +345,12 @@ EveBrain.prototype = {
           self.reconnectTimer = undefined;
           self.connect();
         }, 1000);
+        // If at the end of the attempts, show the user an alert and pause their code.
+      } else if (attempts >= 10) {
+        morphicAlert("Robot Disconnected!",
+          "Robot disconnected by WiFi!\nPlease reconnect using the Connect block and unpause.");
+        world.moveon = 1;
+        world.children[0].stage.threads.pauseAll();
       }
     }
   },
@@ -552,7 +558,7 @@ async function USBconnect() {
   // on disconnect, alert user and pause Snap!
   world.port.addEventListener('disconnect', event => {
     morphicAlert("Robot Disconnected!", 
-    "Robot disconnected by USB!\nPlease reconnect using the Connect block\nand unpause.");
+    "Robot disconnected by USB!\nPlease reconnect using the Connect block and unpause.");
     world.moveon = 1;
     world.children[0].stage.threads.pauseAll();
   });
