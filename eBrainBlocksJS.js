@@ -551,7 +551,13 @@ world.outputStream = undefined; // Set this to undefined so it is easy to check 
 
 async function USBconnect() {
   // Request & open port here.
-  world.port = await navigator.serial.requestPort();
+  try {
+    world.port = await navigator.serial.requestPort();
+  } catch (e) {
+    morphicAlert("USB Error", "You must select a USB port to connect by USB!");
+    world.port = true; // TODO make this signal proper.
+    return;
+  }
   // Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
@@ -658,9 +664,34 @@ function writeToStream(...lines) {
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
  * NOTE: this uses non bold text, otherwise the text is clipped.
  * @param {string} title Title for the dialog
+ * @param {Array|String} message Array of lines to show in the body of the dialog,
+ * or a string to show in the message body. If it is not a string, calls toString on it.
+ */
+function morphicAlert(title, messages) {
+  console.log(message);
+  if (Array.isArray(messages) && messages.length > 0) {
+    var message = "";
+    for (var i = 0; i < messages.length - 1; i++) {
+      message += messages[i] + "\n";
+    }
+    message += messages[messages.length - 1];
+    morphicAlertString(title, message);
+  } else if (typeof messages === "string") {
+    morphicAlertString(title, messages);
+  } else if (messages === null || messages === undefined) {
+    morphicAlertString(title, "[Error message is missing. Please report that this happened to the developers.]");
+  } else {
+    morphicAlertString(title, messages.toString());
+  }
+}
+
+/**
+ * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * NOTE: use morphicAlert instead, it has more robust type checking.
+ * @param {string} title Title for the dialog
  * @param {string} message Message in the body of the dialog
  */
-function morphicAlert(title, message) {
+ function morphicAlertString(title, message) {
   let box = new DialogBoxMorph(); // make dialog
   // add label (in the weirdest way imaginable)
   box.labelString = title;
@@ -674,8 +705,8 @@ function morphicAlert(title, message) {
     box['add' + type](txt);
   }
   addLabel(message, 'Body') // do not change the second input of these
-  box.titleBarColor = new Color(255, 0, 0, 1);
-  box.titlePadding = 12;
+  box.titleBarColor = new Color(255, 0, 0, 1); // Make titlebar red
+  box.titlePadding = 12; // make titlebar taller
   box.fixLayout(); // required
   box.popUp(world); // popup box
 }
