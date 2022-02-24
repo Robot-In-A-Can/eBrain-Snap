@@ -345,6 +345,12 @@ EveBrain.prototype = {
           self.reconnectTimer = undefined;
           self.connect();
         }, 1000);
+        // If at the end of the attempts, show the user an alert and pause their code.
+      } else if (attempts >= 10) {
+        morphicAlert("Robot Disconnected!",
+          "Robot disconnected by WiFi!\nPlease reconnect using the Connect block and unpause.");
+        world.moveon = 1;
+        world.children[0].stage.threads.pauseAll();
       }
     }
   },
@@ -549,6 +555,14 @@ async function USBconnect() {
   // Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
+  // on disconnect, alert user and pause Snap!
+  world.port.addEventListener('disconnect', event => {
+    morphicAlert("Robot Disconnected!", 
+    "Robot disconnected by USB!\nPlease reconnect using the Connect block and unpause.");
+    world.moveon = 1;
+    world.children[0].stage.threads.pauseAll();
+  });
+
   // Setup the output stream
   const encoder = new TextEncoderStream();
   outputDone = encoder.readable.pipeTo(world.port.writable);
@@ -637,4 +651,29 @@ function writeToStream(...lines) {
     writer.write(line + '\n');
   });
   writer.releaseLock();
+}
+
+// https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
+/**
+ * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * NOTE: this does not set the width, body text get clipped at a certain point.
+ * @param {string} title Title for the dialog
+ * @param {string} message Message in the body of the dialog
+ */
+function morphicAlert(title, message) {
+  let box = new DialogBoxMorph(); // make dialog
+  // add label (in the weirdest way imaginable)
+  box.labelString = title;
+  box.createLabel();
+  box.addButton('ok', 'Close'); // This button will close the dialog
+  const addLabel = function (text, type) {
+    let txt = new TextMorph(text);
+    // Text should be bold to match the snap style but has to be 
+    // false here, otherwise the text overflows.
+    txt.isBold = false;
+    box['add' + type](txt);
+  }
+  addLabel(message, 'Body') // do not change the second input of these
+  box.fixLayout(); // required
+  box.popUp(world); // popup box
 }
