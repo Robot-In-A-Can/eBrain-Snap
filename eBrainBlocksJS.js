@@ -656,7 +656,7 @@ function writeToStream(...lines) {
 // https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
 /**
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
- * NOTE: this does not set the width, body text get clipped at a certain point.
+ * NOTE: this uses non bold text, otherwise the text is clipped.
  * @param {string} title Title for the dialog
  * @param {string} message Message in the body of the dialog
  */
@@ -674,6 +674,8 @@ function morphicAlert(title, message) {
     box['add' + type](txt);
   }
   addLabel(message, 'Body') // do not change the second input of these
+  box.titleBarColor = new Color(255, 0, 0, 1);
+  box.titlePadding = 12;
   box.fixLayout(); // required
   box.popUp(world); // popup box
 }
