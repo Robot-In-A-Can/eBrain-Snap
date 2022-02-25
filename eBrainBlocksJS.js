@@ -486,7 +486,12 @@ for (parentMemberName in ParentEveBrain.prototype) {
 var EveBrainUSB = function() {
   ParentEveBrain.call(this);
   this.cbs = {};
-  this.connected = false;
+  // Initially, set connected to true if there is a port.
+  if (world.port) {
+    this.connected = true;
+  } else {
+    this.connected = false;
+  }
 };
 
 EveBrainUSB.prototype = Object.create(ParentEveBrain.prototype);
@@ -551,18 +556,18 @@ world.outputStream = undefined; // Set this to undefined so it is easy to check 
 
 async function USBconnect() {
   // Request & open port here.
-  try {
-    world.port = await navigator.serial.requestPort();
-  } catch (e) {
-    morphicAlert("USB Error", "You must select a USB port to connect by USB!");
-    world.port = true; // TODO make this signal proper.
-    return;
+  world.port = await navigator.serial.requestPort();
+  if (ebUSB) {
+    ebUSB.connected = true;
   }
   // Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
   // on disconnect, alert user and pause Snap!
   world.port.addEventListener('disconnect', event => {
+    if (ebUSB) {
+      ebUSB.connected = false; // signal disconnection to other code.
+    }
     morphicAlert("Robot Disconnected!", 
     "Robot disconnected by USB!\nPlease reconnect using the Connect block and unpause.");
     world.moveon = 1;
