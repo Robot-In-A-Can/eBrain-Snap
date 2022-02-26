@@ -669,11 +669,10 @@ function writeToStream(...lines) {
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
  * NOTE: this uses non bold text, otherwise the text is clipped.
  * @param {string} title Title for the dialog
- * @param {Array|String} message Array of lines to show in the body of the dialog,
- * or a string to show in the message body. If it is not a string, calls toString on it.
+ * @param {String} message Rest parameters of lines to show in the body of the dialog.
+ * If it does not contain Strings, calls toString on it.
  */
-function morphicAlert(title, messages) {
-  console.log(message);
+function morphicAlert(title, ...messages) {
   if (Array.isArray(messages) && messages.length > 0) {
     var message = "";
     for (var i = 0; i < messages.length - 1; i++) {
