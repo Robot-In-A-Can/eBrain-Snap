@@ -124,6 +124,20 @@ ParentEveBrain.prototype = {
     });
   },
 
+  digitalNotify: function(pin_number, cb) {
+    var self = this;
+    this.send({cmd: 'digitalNotify', arg:pin_number}, function(state, msg){
+      cb(state, msg);
+    });
+  },
+
+  digitalStopNotify: function(pin_number, cb) {
+    var self = this;
+    this.send({cmd: 'digitalStopNotify', arg:pin_number}, function(state, msg){
+      cb(state, msg);
+    });
+  },
+
   analogInput: function(pin_number, cb){
     var self = this;
     this.send({cmd: 'analogInput', arg:pin_number}, function(state, msg){
@@ -462,6 +476,10 @@ EveBrain.prototype = {
           delete this.cbs[msg.id];
         }
       }
+      
+      if (msg.status === 'error') {
+        morphicAlert("Error", msg['msg']); // Alert user about error
+      }
       if(msg.status && msg.status === 'error' && msg.msg === 'Too many connections'){
         this.error = true;
         this.broadcast('error');
@@ -532,6 +550,9 @@ EveBrainUSB.prototype.doCallback = function(message) {
       delete this.cbs[message.id];
     }
     return;
+  } else if (message && message.status === 'error') {
+    morphicAlert("Error", message.msg);
+    // this.msg_stack.shift(); // Pop message that prompted this response off queue
   }
 }
 
