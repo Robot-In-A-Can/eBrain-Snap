@@ -126,16 +126,14 @@ ParentEveBrain.prototype = {
 
   digitalNotify: function(pin_number, cb) {
     var self = this;
-    this.send({cmd: 'digitalNotify', arg:pin_number}, function(state, msg){
-      cb(state, msg);
-    });
+    this.send({cmd: 'digitalNotify', arg:pin_number}, cb);
   },
 
   digitalStopNotify: function(pin_number, cb) {
-    var self = this;
-    this.send({cmd: 'digitalStopNotify', arg:pin_number}, function(state, msg){
-      cb(state, msg);
-    });
+    // Remove the pin status from sensorState
+    var index = 'pin_' + pin_number + '_status';
+    delete this.sensorState[index];
+    this.send({cmd: 'digitalStopNotify', arg:pin_number}, cb);
   },
 
   analogInput: function(pin_number, cb){
