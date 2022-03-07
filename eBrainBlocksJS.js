@@ -124,6 +124,18 @@ ParentEveBrain.prototype = {
     });
   },
 
+  digitalNotify: function(pin_number, cb) {
+    var self = this;
+    this.send({cmd: 'digitalNotify', arg:pin_number}, cb);
+  },
+
+  digitalStopNotify: function(pin_number, cb) {
+    // Remove the pin status from sensorState
+    var index = 'pin_' + pin_number + '_status';
+    delete this.sensorState[index];
+    this.send({cmd: 'digitalStopNotify', arg:pin_number}, cb);
+  },
+
   analogInput: function(pin_number, cb){
     var self = this;
     this.send({cmd: 'analogInput', arg:pin_number}, function(state, msg){
@@ -462,6 +474,10 @@ EveBrain.prototype = {
           delete this.cbs[msg.id];
         }
       }
+      
+      if (msg.status === 'error') {
+        morphicAlert("Error", msg['msg']); // Alert user about error
+      }
       if(msg.status && msg.status === 'error' && msg.msg === 'Too many connections'){
         this.error = true;
         this.broadcast('error');
@@ -486,7 +502,12 @@ for (parentMemberName in ParentEveBrain.prototype) {
 var EveBrainUSB = function() {
   ParentEveBrain.call(this);
   this.cbs = {};
-  this.connected = false;
+  // Initially, set connected to true if there is a port.
+  if (world.port) {
+    this.connected = true;
+  } else {
+    this.connected = false;
+  }
 };
 
 EveBrainUSB.prototype = Object.create(ParentEveBrain.prototype);
@@ -527,6 +548,9 @@ EveBrainUSB.prototype.doCallback = function(message) {
       delete this.cbs[message.id];
     }
     return;
+  } else if (message && message.status === 'error') {
+    morphicAlert("Error", message.msg);
+    // this.msg_stack.shift(); // Pop message that prompted this response off queue
   }
 }
 
@@ -552,11 +576,17 @@ world.outputStream = undefined; // Set this to undefined so it is easy to check 
 async function USBconnect() {
   // Request & open port here.
   world.port = await navigator.serial.requestPort();
+  if (ebUSB) {
+    ebUSB.connected = true;
+  }
   // Wait for the port to open.
   await world.port.open({ baudRate: 230400 });
 
   // on disconnect, alert user and pause Snap!
   world.port.addEventListener('disconnect', event => {
+    if (ebUSB) {
+      ebUSB.connected = false; // signal disconnection to other code.
+    }
     morphicAlert("Robot Disconnected!", 
     "Robot disconnected by USB!\nPlease reconnect using the Connect block and unpause.");
     world.moveon = 1;
@@ -656,11 +686,35 @@ function writeToStream(...lines) {
 // https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
 /**
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
- * NOTE: this does not set the width, body text get clipped at a certain point.
+ * NOTE: this uses non bold text, otherwise the text is clipped.
+ * @param {string} title Title for the dialog
+ * @param {String} message Rest parameters of lines to show in the body of the dialog.
+ * If it does not contain Strings, calls toString on it.
+ */
+function morphicAlert(title, ...messages) {
+  if (Array.isArray(messages) && messages.length > 0) {
+    var message = "";
+    for (var i = 0; i < messages.length - 1; i++) {
+      message += messages[i] + "\n";
+    }
+    message += messages[messages.length - 1];
+    morphicAlertString(title, message);
+  } else if (typeof messages === "string") {
+    morphicAlertString(title, messages);
+  } else if (messages === null || messages === undefined) {
+    morphicAlertString(title, "[Error message is missing. Please report that this happened to the developers.]");
+  } else {
+    morphicAlertString(title, messages.toString());
+  }
+}
+
+/**
+ * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * NOTE: use morphicAlert instead, it has more robust type checking.
  * @param {string} title Title for the dialog
  * @param {string} message Message in the body of the dialog
  */
-function morphicAlert(title, message) {
+ function morphicAlertString(title, message) {
   let box = new DialogBoxMorph(); // make dialog
   // add label (in the weirdest way imaginable)
   box.labelString = title;
@@ -674,6 +728,8 @@ function morphicAlert(title, message) {
     box['add' + type](txt);
   }
   addLabel(message, 'Body') // do not change the second input of these
+  box.titleBarColor = new Color(255, 0, 0, 1); // Make titlebar red
+  box.titlePadding = 12; // make titlebar taller
   box.fixLayout(); // required
   box.popUp(world); // popup box
 }
