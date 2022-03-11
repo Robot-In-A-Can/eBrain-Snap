@@ -141,13 +141,28 @@
         ide.flatDesign();
         ide.setBlocksScale(1.2);
         ide.setPaletteWidth(235);
-        world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
+        var xhr = new XMLHttpRequest();
+        xhr.addEventListener("load", function() {
+           ide.droppedText(this.responseText, "RIAC");
+           localStorage.RIAClibrary = this.responseText;
+        });
+        xhr.addEventListener("error", function() {
+          console.log('cannot load library from internet. Attempting load from cache');
+          if (localStorage.RIAClibrary !== undefined) {
+            ide.droppedText(localStorage.RIAClibrary, "RIAC");
+          } else {
+            alert("Cannot load RIAC library");
+          }
+        });
+        xhr.open("GET", "https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml");
+        xhr.send();
+        /*world.children[0].getURL("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml", libraryText => {
           world.children[0].droppedText(libraryText, "RIAC");
           this.isLoadingLibrary = true;
           //load
           //var string = localStorage.snapIDE;
           //ide.openProjectString(string);
-        });
+        });*/
         addToDemo();
       }
 
