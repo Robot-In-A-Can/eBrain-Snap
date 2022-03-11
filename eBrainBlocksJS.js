@@ -686,6 +686,7 @@ function writeToStream(...lines) {
 // https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
 /**
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * If there is another alert with the same title and message, this one will not be shown.
  * NOTE: this uses non bold text, otherwise the text is clipped.
  * @param {string} title Title for the dialog
  * @param {String} message Rest parameters of lines to show in the body of the dialog.
@@ -708,6 +709,8 @@ function morphicAlert(title, ...messages) {
   }
 }
 
+var activeAlerts = new Map();
+
 /**
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
  * NOTE: use morphicAlert instead, it has more robust type checking.
@@ -715,11 +718,16 @@ function morphicAlert(title, ...messages) {
  * @param {string} message Message in the body of the dialog
  */
  function morphicAlertString(title, message) {
+  var alertContents = title + message;
+  if (activeAlerts.get(alertContents) !== undefined) {
+    // don't create a dialog if an identical one exists.
+    return;
+  }
+
   let box = new DialogBoxMorph(); // make dialog
   // add label (in the weirdest way imaginable)
   box.labelString = title;
   box.createLabel();
-  box.addButton('ok', 'Close'); // This button will close the dialog
   const addLabel = function (text, type) {
     let txt = new TextMorph(text);
     // Text should be bold to match the snap style but has to be 
@@ -730,6 +738,15 @@ function morphicAlert(title, ...messages) {
   addLabel(message, 'Body') // do not change the second input of these
   box.titleBarColor = new Color(255, 0, 0, 1); // Make titlebar red
   box.titlePadding = 12; // make titlebar taller
-  box.fixLayout(); // required
+
+  // Add this box to the activeAlerts map, and make the close button work.
+  activeAlerts.set(alertContents, box);
+  box.cancelAndProcess = function() {
+    box.ok();
+    activeAlerts.delete(alertContents);
+  }
+  // This button will close the dialog and remove it from the list of active alerts
+  box.addButton('cancelAndProcess', 'Close');
+  box.fixLayout(); // required, otherwise box looks weird
   box.popUp(world); // popup box
 }
