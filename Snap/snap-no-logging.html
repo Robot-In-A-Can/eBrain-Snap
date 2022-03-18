@@ -165,7 +165,7 @@
           askYesNo("Load project?", "Do you want to load the project you were working on?", 
           function() {
             ide.openProjectString(storedProject);
-            // Must delay autosave until after a selection is made, otherwise empty project will be saved.
+            // Must delay autosave until after a selection is made, otherwise empty project will be auto saved.
             startAutosave();
           }, startAutosave);
         } else {
@@ -186,28 +186,30 @@
       /**
        * Ask a question. When yes or no are clicked, the given
        * callbacks are called, and the box is closed.
+       * Pops up with a delay to ensure it actually is shown.
        */
       function askYesNo(title, message, onYes, onNo) {
-        let box = new DialogBoxMorph(); // make dialog
-        // add label (in the weirdest way imaginable)
+        let box = new DialogBoxMorph();
+        // add label
         box.labelString = title;
         box.createLabel();
+        // add body
         var txt = new TextMorph(message);
         txt.isBold = false;
         box['addBody'](txt); // Text should be bold to match the snap style but has to be false here, otherwise the text overflows.
-        // Add this box to the activeAlerts map, and make the close button work.
+        // Add buttons and their functionality
         box.yes = function() {
-          box.ok(); // this closes the box
+          box.ok(); // close the box
           onYes();
         };
         box.no = function() {
-          box.ok(); // this closes the box
+          box.ok(); // close the box
           onNo();
         };
         box.addButton('yes', 'Yes'); // This button triggers the 'yes' function
-        box.addButton('no', 'No'); // This button will close the dialog
+        box.addButton('no', 'No'); // This button triggers the 'no' function
         box.fixLayout(); // required, otherwise box looks weird
-        box.popUp(world); // popup box
+        setTimeout(function() {box.popUp(world)}, 400); // popup box
       }
       
       function addToDemo() {
