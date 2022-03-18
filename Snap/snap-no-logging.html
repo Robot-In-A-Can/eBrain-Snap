@@ -163,7 +163,7 @@
         // The load is on this timeout because otherwise the load didn't seem to work, since snap would not be shown
         setTimeout(function() {
           // attempt load of project
-          var storedProject = localStorage.getItem(JSON.stringify({name: "snapIDE", location: window.location.href}));
+          var storedProject = localStorage.getItem("snapIDE" + window.location.href);
           if (storedProject && confirm("Do you want to load the project you were working on?")) {
             ide.openProjectString(storedProject);
           }
@@ -171,7 +171,7 @@
           var saveInterval = setInterval(function() {
               var ide = world.children[0];
               var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
-              localStorage.setItem(JSON.stringify({name: "snapIDE", location: window.location.href}), xml);
+              localStorage.setItem("snapIDE" + window.location.href, xml);
             }, 15000);
           }, 500);
         }
