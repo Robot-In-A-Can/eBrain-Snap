@@ -160,22 +160,55 @@
         xhr.send();
         addToDemo();
 
-        // The load is on this timeout because otherwise the load didn't seem to work, since snap would not be shown
-        setTimeout(function() {
-          // attempt load of project
-          var storedProject = localStorage.getItem("snapIDE" + window.location.href);
-          if (storedProject && confirm("Do you want to load the project you were working on?")) {
+        var storedProject = localStorage.getItem("snapIDE" + window.location.href);
+        if (storedProject) {
+          askYesNo("Load project?", "Do you want to load the project you were working on?", 
+          function() {
             ide.openProjectString(storedProject);
-          }
-          // setup project autosave
-          var saveInterval = setInterval(function() {
-              var ide = world.children[0];
-              var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
-              localStorage.setItem("snapIDE" + window.location.href, xml);
-            }, 15000);
-          }, 500);
+            // Must delay autosave until after a selection is made, otherwise empty project will be saved.
+            startAutosave();
+          }, startAutosave);
+        } else {
+          startAutosave();
         }
+      }
 
+      /**
+       * Start project autosave every 15 seconds.
+       */
+      function startAutosave() {
+        var saveInterval = setInterval(function() {
+            var ide = world.children[0];
+            var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
+            localStorage.setItem("snapIDE" + window.location.href, xml);
+        }, 15000);
+      }
+      /**
+       * Ask a question. When yes or no are clicked, the given
+       * callbacks are called, and the box is closed.
+       */
+      function askYesNo(title, message, onYes, onNo) {
+        let box = new DialogBoxMorph(); // make dialog
+        // add label (in the weirdest way imaginable)
+        box.labelString = title;
+        box.createLabel();
+        var txt = new TextMorph(message);
+        txt.isBold = false;
+        box['addBody'](txt); // Text should be bold to match the snap style but has to be false here, otherwise the text overflows.
+        // Add this box to the activeAlerts map, and make the close button work.
+        box.yes = function() {
+          box.ok(); // this closes the box
+          onYes();
+        };
+        box.no = function() {
+          box.ok(); // this closes the box
+          onNo();
+        };
+        box.addButton('yes', 'Yes'); // This button triggers the 'yes' function
+        box.addButton('no', 'No'); // This button will close the dialog
+        box.fixLayout(); // required, otherwise box looks weird
+        box.popUp(world); // popup box
+      }
       
       function addToDemo() {
         var h, b, c, ci, cb, cm, cd, co, cl, cu, cs, cmd, rings, rc, scripts;
