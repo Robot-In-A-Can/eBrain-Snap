@@ -163,11 +163,14 @@
         var storedProject = localStorage.getItem("snapIDE" + window.location.href);
         if (storedProject) {
           askYesNo("Load project?", "Do you want to load the project you were working on?", 
-          function() {
-            ide.openProjectString(storedProject);
+          function(button) {
             // Must delay autosave until after a selection is made, otherwise empty project will be auto saved.
-            startAutosave();
-          }, startAutosave);
+            if (button) {
+              ide.openProjectString(storedProject, startAutosave);
+            } else {
+              startAutosave();
+            }
+          });
         } else {
           startAutosave();
         }
@@ -185,10 +188,11 @@
       }
       /**
        * Ask a question. When yes or no are clicked, the given
-       * callbacks are called, and the box is closed.
+       * callback is called with the button state given as a boolean,
+       * and the box is closed.
        * Pops up with a delay to ensure it actually is shown.
        */
-      function askYesNo(title, message, onYes, onNo) {
+      function askYesNo(title, message, callback) {
         let box = new DialogBoxMorph();
         // add label
         box.labelString = title;
@@ -197,19 +201,19 @@
         var txt = new TextMorph(message);
         txt.isBold = false;
         box['addBody'](txt); // Text should be bold to match the snap style but has to be false here, otherwise the text overflows.
-        // Add buttons and their functionality
+        // Add methods for buttons to call
         box.yes = function() {
           box.ok(); // close the box
-          onYes();
+          callback(true);
         };
         box.no = function() {
           box.ok(); // close the box
-          onNo();
+          callback(false);
         };
         box.addButton('yes', 'Yes'); // This button triggers the 'yes' function
         box.addButton('no', 'No'); // This button triggers the 'no' function
-        box.fixLayout(); // required, otherwise box looks weird
-        setTimeout(function() {box.popUp(world)}, 400); // popup box
+        box.fixLayout(); // required
+        setTimeout(function() {box.popUp(world)}, 400);
       }
       
       function addToDemo() {
