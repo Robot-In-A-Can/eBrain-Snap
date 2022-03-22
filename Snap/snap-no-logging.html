@@ -142,24 +142,29 @@
         ide.setBlocksScale(1.2);
         ide.setPaletteWidth(235);
         // Load in library from github
-        var xhr = new XMLHttpRequest();
-        xhr.addEventListener("load", function() {
-           ide.droppedText(this.responseText, "RIAC");
-           localStorage.setItem("RIAClibrary", this.responseText);
-        });
-        // Attempt load from localstorage if offline
-        xhr.addEventListener("error", function() {
+        fetch("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml")
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('could not fetch RIAC blocks from github');
+          }
+          return response.text();
+        }).then(RIAClibrary => {
+          ide.droppedText(RIAClibrary, "RIAC");
+          localStorage.setItem("RIAClibrary", RIAClibrary);
+        }).catch(error => {
           console.log('cannot load library from internet. Attempting load from cache');
           if (localStorage.getItem("RIAClibrary") !== undefined) {
             ide.droppedText(localStorage.getItem("RIAClibrary"), "RIAC");
           } else {
             alert("Cannot load RIAC library");
           }
-        });
-        xhr.open("GET", "https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml");
-        xhr.send();
-        addToDemo();
+        }).then(loadProjectFromLocalstorage);
 
+        addToDemo();
+      }
+
+      function loadProjectFromLocalstorage() {
+        var ide = world.children[0];
         var storedProject = localStorage.getItem("snapIDE" + window.location.href);
         if (storedProject) {
           askYesNo("Load project?", "Do you want to load the project you were working on?", 
