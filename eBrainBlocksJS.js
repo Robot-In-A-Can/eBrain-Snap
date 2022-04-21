@@ -32,7 +32,7 @@ var ParentEveBrain = function() {
   this.distanceSensor = {level: null};
   this.tempSensor = {level: null};
   this.humidSensor = {level: null};
-  this.compass = {x: null, y: null, z: null};
+  this.compassSensor = {x: null, y: null, z: null};
   this.config = null;
   this.sensorState = {};
 }
@@ -170,7 +170,7 @@ ParentEveBrain.prototype = {
     this.send({cmd: 'compassSensor'}, function(state, msg){
       cb(state, msg);
       if(state === 'complete' && undefined != msg){
-        self.compass.x = msg.msg;
+        self.compassSensor.x = msg.msg;
       }
     });
   },
