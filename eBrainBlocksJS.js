@@ -170,7 +170,9 @@ ParentEveBrain.prototype = {
     this.send({cmd: 'compassSensor'}, function(state, msg){
       cb(state, msg);
       if(state === 'complete' && undefined != msg){
-        self.compassSensor.x = msg.msg;
+        self.compassSensor.x = msg.X;
+        self.compassSensor.y = msg.Y;
+        self.compassSensor.z = msg.Z;
       }
     });
   },
