@@ -487,9 +487,13 @@ EveBrain.prototype = {
             this.cbs[msg.id]('started', msg);
           }
           this.robot_state = 'running';
-        }else if(msg.status === 'complete'){
+        } else {
+          // this branch does the same thing in the event of 'complete', 'error' etc
+          // statuses, since otherwise if a command returns an error this object will be
+          // in an inconsistent state, where the only way to get out of it is to
+          // run the stop() block.
           if(this.cbs[msg.id]){
-            this.cbs[msg.id]('complete', msg);
+            this.cbs[msg.id](msg.status, msg);
             delete this.cbs[msg.id];
           }
           this.msg_stack.shift();
@@ -499,7 +503,8 @@ EveBrain.prototype = {
           this.robot_state = 'idle';
           this.process_msg_queue();
         }
-      }else{
+      } else {
+        // here: if it's something like a version command, that bypasses the msg_stack
         if(this.cbs[msg.id]){
           this.cbs[msg.id]('complete', msg);
           delete this.cbs[msg.id];
@@ -559,29 +564,44 @@ EveBrainUSB.prototype.send_msg = function(message, callback) {
  * @param message Message from ebrain
  */
 EveBrainUSB.prototype.doCallback = function(message) {
-  if(message && message.status == 'accepted') {
-    this.robot_state = 'running';
-    if(this.cbs[message.id]){
-      this.cbs[message.id]('started', message);
-    }
-  } else if(message && message.status == 'complete'){
-    if(this.cbs[message.id]){
-      this.cbs[message.id]('complete', message);
-      delete this.cbs[message.id];
-    }
-    this.robot_state = 'idle';
-    this.msg_stack.shift(); // Pop message that prompted this response off queue
-    this.process_msg_queue();
-  } else if(message && message.status === 'notify'){
+  if(message && message.status === 'notify'){
     this.sensorState[message.id] = message.msg;
     if (this.cbs[message.id]) {
       this.cbs[message.id]('notify', message);
       delete this.cbs[message.id];
     }
     return;
-  } else if (message && message.status === 'error') {
+  }
+
+  if(this.msg_stack.length > 0 && this.msg_stack[0].id == message.id){
+    if(message && message.status == 'accepted') {
+      this.robot_state = 'running';
+      if(this.cbs[message.id]){
+        this.cbs[message.id]('started', message);
+      }
+    } else {
+      // this branch does the same thing in the event of 'complete', 'error' etc
+      // statuses, since otherwise if a command returns an error this object will be
+      // in an inconsistent state, where the only way to get out of it is to
+      // run the stop() block.
+      if (this.cbs[message.id]) {
+        this.cbs[message.id](message.status, message);
+        delete this.cbs[message.id];
+      }
+      this.robot_state = 'idle';
+      this.msg_stack.shift(); // Pop message that prompted this response off queue
+      this.process_msg_queue();
+    }
+  } else {
+    // here: if it's something like a version command, that bypasses the msg_stack
+    if(this.cbs[message.id]){
+      this.cbs[message.id]('complete', message);
+      delete this.cbs[message.id];
+    }
+  }
+
+  if (message && message.status === 'error') {
     morphicAlert("Error", message.msg);
-    // this.msg_stack.shift(); // Pop message that prompted this response off queue
   }
 }
 
