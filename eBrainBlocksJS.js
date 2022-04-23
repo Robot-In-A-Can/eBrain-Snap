@@ -274,13 +274,8 @@ ParentEveBrain.prototype = {
 
 var EveBrain = function(url){
   ParentEveBrain.call(this);
-  // Stores whether the ebrain was connected once. Prevents
-  // the disconnected dialog from showing when using the Connect block.
-  this.wasConnectedOnce = false;
-  // also prevents the disconnected dialog from showing when using the Connect
-  attempts = 0;
   this.url = url;
-  this.connect();
+  this.initializeAndConnect();
   this.cbs = {};
   this.listeners = [];
   this.wifiNetworks = {};
@@ -295,10 +290,13 @@ EveBrain.prototype = {
   /**
    * Called by the connect block. Performs initialization
    * to ensure that the disconnected dialogs behave as expected,
-   * and connects.
+   * and attempts to connect to the ebrain
    */
   initializeAndConnect: function() {
+    // Stores whether the ebrain was connected once at least once since executing 
+    // the Connect block. Prevents the disconnected dialog from showing when using the Connect block.
     this.wasConnectedOnce = false;
+    // also prevents the disconnected dialog from showing when using the Connect
     attempts = 0;
     this.connect();
   },
@@ -335,14 +333,15 @@ EveBrain.prototype = {
         this.connTimeout = window.setTimeout(function(){
           if(!self.connected){
             try { 
-              self.ws.close();;
+              self.ws.close();
             }
             catch(error) {
               console.log(error);
             }
           } 
         }, 1000);
-      } else if (this.wasConnectedOnce) {
+        // checks that the robot was connected at least once over wifi, and is not connected by USB
+      } else if (this.wasConnectedOnce && eb) {
         // on the last attempt, show the disconnected message.
         morphicAlert("Robot Disconnected!",
           "Robot disconnected by WiFi!", "Please reconnect using the Connect block and unpause.");
