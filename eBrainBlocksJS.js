@@ -274,6 +274,11 @@ ParentEveBrain.prototype = {
 
 var EveBrain = function(url){
   ParentEveBrain.call(this);
+  // Stores whether the ebrain was connected once. Prevents
+  // the disconnected dialog from showing when using the Connect block.
+  this.wasConnectedOnce = false;
+  // also prevents the disconnected dialog from showing when using the Connect
+  attempts = 0;
   this.url = url;
   this.connect();
   this.cbs = {};
@@ -286,6 +291,17 @@ EveBrain.prototype = {
   connected: false,
   error: false,
   timeoutTimer: undefined,
+
+  /**
+   * Called by the connect block. Performs initialization
+   * to ensure that the disconnected dialogs behave as expected,
+   * and connects.
+   */
+  initializeAndConnect: function() {
+    this.wasConnectedOnce = false;
+    attempts = 0;
+    this.connect();
+  },
 
   connect: function(){
     if(!this.connected && !this.error){
@@ -307,6 +323,7 @@ EveBrain.prototype = {
       this.ws = filterUnicode(new WebSocket(this.url));
       this.ws.onmessage = function(ws_msg){self.handle_ws(ws_msg)};
       this.ws.onopen = function(){
+        self.wasConnectedOnce = true;
         self.version(function(){
           self.setConnectedState(true);
           attempts = 0;
@@ -325,6 +342,12 @@ EveBrain.prototype = {
             }
           } 
         }, 1000);
+      } else if (this.wasConnectedOnce) {
+        // on the last attempt, show the disconnected message.
+        morphicAlert("Robot Disconnected!",
+          "Robot disconnected by WiFi!", "Please reconnect using the Connect block and unpause.");
+        world.moveon = 1;
+        world.children[0].stage.threads.pauseAll();
       }
     }
   },
@@ -370,12 +393,8 @@ EveBrain.prototype = {
           self.reconnectTimer = undefined;
           self.connect();
         }, 1000);
-        // If at the end of the attempts, show the user an alert and pause their code.
-      } else if (attempts >= 10) {
-        morphicAlert("Robot Disconnected!",
-          "Robot disconnected by WiFi!\nPlease reconnect using the Connect block and unpause.");
-        world.moveon = 1;
-        world.children[0].stage.threads.pauseAll();
+        // If at the end of the attempts and was connected at least once, 
+        // show the user an alert and pause their code.
       }
     }
   },
