@@ -266,8 +266,9 @@ ParentEveBrain.prototype = {
     this.move('rightMotorB', distance, cb);
   },
 
-  arc: function(angle,radius,repeat,cb){
-    this.send({cmd: 'arc' , arg:[angle,radius,repeat]}, cb);
+  advancedMove: function(leftDistance, leftSpeed, rightDistance, rightSpeed, cb) {
+    this.send({cmd: "speedMove", arg: {"leftDistance": leftDistance, "leftSpeed": leftSpeed,
+    "rightDistance": rightDistance, "rightSpeed": rightSpeed}}, cb);
   }
 }
 
@@ -736,7 +737,7 @@ function writeToStream(...lines) {
 
 // https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
 /**
- * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * Creates a red morhpic dialog and shows it to the user, with one 'Close' button.
  * If there is another alert with the same title and message, this one will not be shown.
  * NOTE: this uses non bold text, otherwise the text is clipped.
  * @param {string} title Title for the dialog
@@ -744,19 +745,31 @@ function writeToStream(...lines) {
  * If it does not contain Strings, calls toString on it.
  */
 function morphicAlert(title, ...messages) {
+  morphicDialog(new Color(255, 0, 0, 1), title, messages);
+}
+/**
+ * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * If there is another alert with the same title and message, this one will not be shown.
+ * NOTE: this uses non bold text, otherwise the text is clipped.
+ * @param {Color} color The title bar color.
+ * @param {string} title Title for the dialog
+ * @param {String} message Rest parameters of lines to show in the body of the dialog.
+ * If it does not contain Strings, calls toString on it.
+ */
+function morphicDialog(color, title, ...messages) {
   if (Array.isArray(messages) && messages.length > 0) {
     var message = "";
     for (var i = 0; i < messages.length - 1; i++) {
       message += messages[i] + "\n";
     }
     message += messages[messages.length - 1];
-    morphicAlertString(title, message);
+    morphicAlertString(title, message, color);
   } else if (typeof messages === "string") {
-    morphicAlertString(title, messages);
+    morphicAlertString(title, messages, color);
   } else if (messages === null || messages === undefined) {
-    morphicAlertString(title, "[Error message is missing. Please report that this happened to the developers.]");
+    morphicAlertString(title, "[Error message is missing. Please report that this happened to the developers.]", color);
   } else {
-    morphicAlertString(title, messages.toString());
+    morphicAlertString(title, messages.toString(), color);
   }
 }
 
@@ -767,8 +780,9 @@ var activeAlerts = new Map();
  * NOTE: use morphicAlert instead, it has more robust type checking.
  * @param {string} title Title for the dialog
  * @param {string} message Message in the body of the dialog
+ * @param {Color} color Colour of the title bar, red by default.
  */
- function morphicAlertString(title, message) {
+ function morphicAlertString(title, message, color) {
   var alertContents = title + message;
   if (activeAlerts.get(alertContents) !== undefined) {
     // don't create a dialog if an identical one exists.
@@ -787,7 +801,7 @@ var activeAlerts = new Map();
     box['add' + type](txt);
   }
   addLabel(message, 'Body') // do not change the second input of these
-  box.titleBarColor = new Color(255, 0, 0, 1); // Make titlebar red
+  box.titleBarColor = color || new Color(255, 0, 0, 1); // Make titlebar red if not specified.
   box.titlePadding = 12; // make titlebar taller
 
   // Add this box to the activeAlerts map, and make the close button work.
