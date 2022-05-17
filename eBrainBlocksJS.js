@@ -35,6 +35,7 @@ var ParentEveBrain = function() {
   this.compassSensor = {x: null, y: null, z: null};
   this.config = null;
   this.sensorState = {};
+  this.eBrainVersion = null;
 }
 
 ParentEveBrain.prototype = {
@@ -78,6 +79,21 @@ ParentEveBrain.prototype = {
     this.msg_stack = [];
   },
 
+  version: function(cb){
+    this.send({cmd:'version'}, cb);
+  },
+
+
+  getVersion: function(cb) {
+    var self = this;
+    this.send({cmd:'version'}, function(state, msg) {
+      if (state === 'complete' && undefined !== msg) {
+        self.eBrainVersion = msg.msg;
+      }
+      cb(state, msg);
+    });
+  },
+
   stop: function(){
     var self = this;
     this.send({cmd:'stop'}, function(state, msg, recursion){
@@ -105,6 +121,10 @@ ParentEveBrain.prototype = {
 
   connect_to_network: function(SSID, PASS, callback) {
     this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
+  },
+
+  setWheelDimensions: function(wheelDiameter, wheelDistance, callback) {
+    this.send({cmd: 'setConfig', arg: {'wheelDiameter': wheelDiameter, 'wheelDistance': wheelDistance}}, callback);
   },
 
   postToServer: function (onOff, server_host, sec, temp, dist, callback) {
@@ -451,10 +471,6 @@ EveBrain.prototype = {
     this.send({cmd:'ping'}, cb);
   },
 
-  version: function(cb){
-    this.send({cmd:'version'}, cb);
-  },
-
   send_msg: function(msg){
     var self = this;
     msg = filterUnicode(msg);
@@ -614,7 +630,7 @@ EveBrainUSB.prototype.doCallback = function(message) {
 EveBrainUSB.prototype.testConnection = function() {
   this.connected = false;
   var self = this;
-  this.send({cmd: "version"}, function(status, msg) {
+  this.version(function(status, msg) {
     if (status === 'complete') {
       self.connected = true;
     }
