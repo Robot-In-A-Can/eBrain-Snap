@@ -36,6 +36,7 @@ var ParentEveBrain = function() {
   this.config = null;
   this.sensorState = {};
   this.eBrainVersion = null;
+  this.lastPausedState = null;
 }
 
 ParentEveBrain.prototype = {
@@ -289,9 +290,23 @@ ParentEveBrain.prototype = {
   advancedMove: function(leftDistance, leftSpeed, rightDistance, rightSpeed, cb) {
     this.send({cmd: "speedMove", arg: {"leftDistance": leftDistance, "leftSpeed": leftSpeed,
     "rightDistance": rightDistance, "rightSpeed": rightSpeed}}, cb);
+  },
+
+  pause: function(cb){
+    var self = this;
+    this.send({cmd:'pause'}, function(state, msg) {
+      if (state === 'complete') {
+        // put the remaining millimeters in this ebrain object
+        self.lastPausedState = msg.msg;
+      }
+      cb(state, msg);
+    });
+  },
+
+  resume: function(cb){
+    this.send({cmd:'resume'}, cb);
   }
 }
-
 
 var EveBrain = function(url){
   ParentEveBrain.call(this);
@@ -458,14 +473,6 @@ EveBrain.prototype = {
       }
     });
   },
-
-  /*pause: function(cb){
-    this.send({cmd:'pause'}, cb);
-  },
-
-  resume: function(cb){
-    this.send({cmd:'resume'}, cb);
-  },*/
 
   ping: function(cb){
     this.send({cmd:'ping'}, cb);
