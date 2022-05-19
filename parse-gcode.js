@@ -13,6 +13,7 @@ function badParsed(val) {
 
 var units = "mm";
 // Implemented commands:
+// g1 and g0: move to the specified X and Y coordinates.
 // g20: inches g21: millimeters
 // M2: program end
 
