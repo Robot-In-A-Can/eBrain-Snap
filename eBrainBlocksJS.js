@@ -292,6 +292,15 @@ ParentEveBrain.prototype = {
     "rightDistance": rightDistance, "rightSpeed": rightSpeed}}, cb);
   },
 
+  advancedMoveSteps: function(leftDistance, leftSpeed, rightDistance, rightSpeed, cb) {
+    this.send({cmd: "speedMoveSteps", arg: {"leftSteps": leftDistance, "leftSpeed": leftSpeed,
+    "rightSteps": rightDistance, "rightSpeed": rightSpeed}}, cb);
+  },
+
+  calibrateSlack: function(slackAmount, cb) {
+    this.send({cmd:"calibrateSlack", arg: slackAmount}, cb);
+  },
+
   pause: function(cb){
     var self = this;
     this.send({cmd:'pause'}, function(state, msg) {
@@ -768,7 +777,7 @@ function writeToStream(...lines) {
  * If it does not contain Strings, calls toString on it.
  */
 function morphicAlert(title, ...messages) {
-  morphicDialog(new Color(255, 0, 0, 1), title, messages);
+  morphicDialog(new Color(255, 0, 0, 1), title, ...messages);
 }
 /**
  * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
