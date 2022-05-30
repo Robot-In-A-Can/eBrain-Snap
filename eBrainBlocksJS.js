@@ -2,6 +2,9 @@ var escapable = /[\x00-\x1f\ud800-\udfff\u200c-\u200f\u2028-\u202f\u2060-\u206f\
 var attempts = 0;
 var eb;
 var ebUSB;
+// this is used by some RIAC Snap blocks to send a signal to snap when
+// they are done waiting.
+world.moveons = {};
 
 function filterUnicode(quoted){
 
@@ -95,7 +98,7 @@ ParentEveBrain.prototype = {
     });
   },
 
-  stop: function(){
+  stop: function(cb){
     var self = this;
     this.send({cmd:'stop'}, function(state, msg, recursion){
       if(state === 'complete' && !recursion){
@@ -104,6 +107,7 @@ ParentEveBrain.prototype = {
           self.cbs[i]('complete', undefined, true);
         }
         self.robot_state = 'idle';
+        cb(state, msg);
         self.clearMessagesCallbacks();
       }
     });
