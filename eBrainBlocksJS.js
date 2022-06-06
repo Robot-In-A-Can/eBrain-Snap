@@ -308,7 +308,7 @@ ParentEveBrain.prototype = {
   pause: function(cb){
     var self = this;
     this.send({cmd:'pause'}, function(state, msg) {
-      if (state === 'complete') {
+      if (state === 'complete' && msg) {
         // put the remaining millimeters in this ebrain object
         self.lastPausedState = msg.msg;
       }
@@ -460,6 +460,7 @@ EveBrain.prototype = {
   },
 
   handleError: function(err){
+    console.log("websocket error: " + JSON.stringify(err));
     if(err instanceof CloseEvent || err === 'Timeout'){
       if(this.ws.readyState === WebSocket.OPEN){
         this.ws.close()
