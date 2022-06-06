@@ -244,6 +244,10 @@ ParentEveBrain.prototype = {
     }
   },
 
+  genericServo: function(pin, angle, callback) {
+    this.send({cmd: "genericServo", arg: {pin: pin, angle:angle}}, callback);
+  },
+
   move: function(direction, distance, cb){
     // If we pass this first check, distance is a number or a string parseable as such
     if (!(typeof distance === 'number' || !isNaN(distance))) {
