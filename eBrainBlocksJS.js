@@ -48,7 +48,7 @@ ParentEveBrain.prototype = {
   /**
    * Deals with the callback, and queues up the message to be sent to ebrain.
    * If the command is not 'important' (ie not 'stop', etc) or it is a command 
-   * that runs immediately, like 'genericServo', it is queued up.
+   * that runs immediately, like 'pinServo', it is queued up.
    * The subclasses must call process_msg_queue when the robot is idle to
    * make sure queued messages are indeed sent, and must shift() the queue once 
    * a response is received.
@@ -64,7 +64,7 @@ ParentEveBrain.prototype = {
     if(msg.arg && msg.arg.toString() != '[object Object]') {
       msg.arg = msg.arg.toString();
     }
-    if(['stop', 'pause', 'resume', 'ping', 'version', 'genericServo'].indexOf(msg.cmd) >= 0){
+    if(['stop', 'pause', 'resume', 'ping', 'version', 'pinServo'].indexOf(msg.cmd) >= 0){
       this.send_msg(msg);
     }else{
       this.msg_stack.push(msg);
@@ -245,8 +245,8 @@ ParentEveBrain.prototype = {
     }
   },
 
-  genericServo: function(pin, angle, callback) {
-    this.send({cmd: "genericServo", arg: {pin: pin, angle:angle}}, callback);
+  pinServo: function(pin, angle, callback) {
+    this.send({cmd: "pinServo", arg: {pin: pin, angle:angle}}, callback);
   },
 
   move: function(direction, distance, cb){
