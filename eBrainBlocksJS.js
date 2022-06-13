@@ -2,6 +2,9 @@ var escapable = /[\x00-\x1f\ud800-\udfff\u200c-\u200f\u2028-\u202f\u2060-\u206f\
 var attempts = 0;
 var eb;
 var ebUSB;
+// this is used by some RIAC Snap blocks to send a signal to snap when
+// they are done waiting.
+world.moveons = {};
 
 function filterUnicode(quoted){
 
@@ -35,6 +38,8 @@ var ParentEveBrain = function() {
   this.compassSensor = {x: null, y: null, z: null};
   this.config = null;
   this.sensorState = {};
+  this.eBrainVersion = null;
+  this.lastPausedState = null;
 }
 
 ParentEveBrain.prototype = {
@@ -42,7 +47,8 @@ ParentEveBrain.prototype = {
 
   /**
    * Deals with the callback, and queues up the message to be sent to ebrain.
-   * If the command is not 'important' (ie not 'stop', etc) it is queued up.
+   * If the command is not 'important' (ie not 'stop', etc) or it is a command 
+   * that runs immediately, like 'pinServo', it is queued up.
    * The subclasses must call process_msg_queue when the robot is idle to
    * make sure queued messages are indeed sent, and must shift() the queue once 
    * a response is received.
@@ -58,7 +64,7 @@ ParentEveBrain.prototype = {
     if(msg.arg && msg.arg.toString() != '[object Object]') {
       msg.arg = msg.arg.toString();
     }
-    if(['stop', 'pause', 'resume', 'ping', 'version'].indexOf(msg.cmd) >= 0){
+    if(['stop', 'pause', 'resume', 'ping', 'version', 'pinServo'].indexOf(msg.cmd) >= 0){
       this.send_msg(msg);
     }else{
       this.msg_stack.push(msg);
@@ -78,7 +84,22 @@ ParentEveBrain.prototype = {
     this.msg_stack = [];
   },
 
-  stop: function(){
+  version: function(cb){
+    this.send({cmd:'version'}, cb);
+  },
+
+
+  getVersion: function(cb) {
+    var self = this;
+    this.send({cmd:'version'}, function(state, msg) {
+      if (state === 'complete' && undefined !== msg) {
+        self.eBrainVersion = msg.msg;
+      }
+      cb(state, msg);
+    });
+  },
+
+  stop: function(cb){
     var self = this;
     this.send({cmd:'stop'}, function(state, msg, recursion){
       if(state === 'complete' && !recursion){
@@ -87,6 +108,7 @@ ParentEveBrain.prototype = {
           self.cbs[i]('complete', undefined, true);
         }
         self.robot_state = 'idle';
+        cb(state, msg);
         self.clearMessagesCallbacks();
       }
     });
@@ -105,6 +127,10 @@ ParentEveBrain.prototype = {
 
   connect_to_network: function(SSID, PASS, callback) {
     this.send({cmd: 'setConfig', arg: {sta_ssid: SSID, sta_pass: PASS}}, callback);
+  },
+
+  setWheelDimensions: function(wheelDiameter, wheelDistance, callback) {
+    this.send({cmd: 'setConfig', arg: {'wheelDiameter': wheelDiameter, 'wheelDistance': wheelDistance}}, callback);
   },
 
   postToServer: function (onOff, server_host, sec, temp, dist, callback) {
@@ -219,6 +245,10 @@ ParentEveBrain.prototype = {
     }
   },
 
+  pinServo: function(pin, angle, callback) {
+    this.send({cmd: "pinServo", arg: {pin: pin, angle:angle}}, callback);
+  },
+
   move: function(direction, distance, cb){
     // If we pass this first check, distance is a number or a string parseable as such
     if (!(typeof distance === 'number' || !isNaN(distance))) {
@@ -266,11 +296,35 @@ ParentEveBrain.prototype = {
     this.move('rightMotorB', distance, cb);
   },
 
-  arc: function(angle,radius,repeat,cb){
-    this.send({cmd: 'arc' , arg:[angle,radius,repeat]}, cb);
+  advancedMove: function(leftDistance, leftSpeed, rightDistance, rightSpeed, cb) {
+    this.send({cmd: "speedMove", arg: {"leftDistance": leftDistance, "leftSpeed": leftSpeed,
+    "rightDistance": rightDistance, "rightSpeed": rightSpeed}}, cb);
+  },
+
+  advancedMoveSteps: function(leftDistance, leftSpeed, rightDistance, rightSpeed, cb) {
+    this.send({cmd: "speedMoveSteps", arg: {"leftSteps": leftDistance, "leftSpeed": leftSpeed,
+    "rightSteps": rightDistance, "rightSpeed": rightSpeed}}, cb);
+  },
+
+  calibrateSlack: function(slackAmount, cb) {
+    this.send({cmd:"calibrateSlack", arg: slackAmount}, cb);
+  },
+
+  pause: function(cb){
+    var self = this;
+    this.send({cmd:'pause'}, function(state, msg) {
+      if (state === 'complete' && msg) {
+        // put the remaining millimeters in this ebrain object
+        self.lastPausedState = msg.msg;
+      }
+      cb(state, msg);
+    });
+  },
+
+  resume: function(cb){
+    this.send({cmd:'resume'}, cb);
   }
 }
-
 
 var EveBrain = function(url){
   ParentEveBrain.call(this);
@@ -411,6 +465,7 @@ EveBrain.prototype = {
   },
 
   handleError: function(err){
+    console.log("websocket error: " + JSON.stringify(err));
     if(err instanceof CloseEvent || err === 'Timeout'){
       if(this.ws.readyState === WebSocket.OPEN){
         this.ws.close()
@@ -438,20 +493,8 @@ EveBrain.prototype = {
     });
   },
 
-  /*pause: function(cb){
-    this.send({cmd:'pause'}, cb);
-  },
-
-  resume: function(cb){
-    this.send({cmd:'resume'}, cb);
-  },*/
-
   ping: function(cb){
     this.send({cmd:'ping'}, cb);
-  },
-
-  version: function(cb){
-    this.send({cmd:'version'}, cb);
   },
 
   send_msg: function(msg){
@@ -613,7 +656,7 @@ EveBrainUSB.prototype.doCallback = function(message) {
 EveBrainUSB.prototype.testConnection = function() {
   this.connected = false;
   var self = this;
-  this.send({cmd: "version"}, function(status, msg) {
+  this.version(function(status, msg) {
     if (status === 'complete') {
       self.connected = true;
     }
@@ -736,7 +779,7 @@ function writeToStream(...lines) {
 
 // https://forum.snap.berkeley.edu/t/how-do-i-make-a-dialog-box-with-custom-buttons/6347/4
 /**
- * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * Creates a red morhpic dialog and shows it to the user, with one 'Close' button.
  * If there is another alert with the same title and message, this one will not be shown.
  * NOTE: this uses non bold text, otherwise the text is clipped.
  * @param {string} title Title for the dialog
@@ -744,19 +787,31 @@ function writeToStream(...lines) {
  * If it does not contain Strings, calls toString on it.
  */
 function morphicAlert(title, ...messages) {
+  morphicDialog(new Color(255, 0, 0, 1), title, ...messages);
+}
+/**
+ * Creates a morhpic dialog and shows it to the user, with one 'Close' button.
+ * If there is another alert with the same title and message, this one will not be shown.
+ * NOTE: this uses non bold text, otherwise the text is clipped.
+ * @param {Color} color The title bar color.
+ * @param {string} title Title for the dialog
+ * @param {String} message Rest parameters of lines to show in the body of the dialog.
+ * If it does not contain Strings, calls toString on it.
+ */
+function morphicDialog(color, title, ...messages) {
   if (Array.isArray(messages) && messages.length > 0) {
     var message = "";
     for (var i = 0; i < messages.length - 1; i++) {
       message += messages[i] + "\n";
     }
     message += messages[messages.length - 1];
-    morphicAlertString(title, message);
+    morphicAlertString(title, message, color);
   } else if (typeof messages === "string") {
-    morphicAlertString(title, messages);
+    morphicAlertString(title, messages, color);
   } else if (messages === null || messages === undefined) {
-    morphicAlertString(title, "[Error message is missing. Please report that this happened to the developers.]");
+    morphicAlertString(title, "[Error message is missing. Please report that this happened to the developers.]", color);
   } else {
-    morphicAlertString(title, messages.toString());
+    morphicAlertString(title, messages.toString(), color);
   }
 }
 
@@ -767,8 +822,9 @@ var activeAlerts = new Map();
  * NOTE: use morphicAlert instead, it has more robust type checking.
  * @param {string} title Title for the dialog
  * @param {string} message Message in the body of the dialog
+ * @param {Color} color Colour of the title bar, red by default.
  */
- function morphicAlertString(title, message) {
+ function morphicAlertString(title, message, color) {
   var alertContents = title + message;
   if (activeAlerts.get(alertContents) !== undefined) {
     // don't create a dialog if an identical one exists.
@@ -787,7 +843,7 @@ var activeAlerts = new Map();
     box['add' + type](txt);
   }
   addLabel(message, 'Body') // do not change the second input of these
-  box.titleBarColor = new Color(255, 0, 0, 1); // Make titlebar red
+  box.titleBarColor = color || new Color(255, 0, 0, 1); // Make titlebar red if not specified.
   box.titlePadding = 12; // make titlebar taller
 
   // Add this box to the activeAlerts map, and make the close button work.
