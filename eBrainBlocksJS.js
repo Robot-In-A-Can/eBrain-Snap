@@ -397,8 +397,13 @@ EveBrain.prototype = {
         // checks that the robot was connected at least once over wifi, and is not connected by USB
       } else if (this.wasConnectedOnce && eb) {
         // on the last attempt, show the disconnected message.
-        morphicAlert("Robot Disconnected!",
-          "Robot disconnected by WiFi!", "Please reconnect using the Connect block and unpause.");
+        if (SnapTranslator.language.startsWith('fr')) {
+          morphicAlert("Robot déconnecté",
+          "Connexion WiFi au robot interrompu!", "S'il te plaît, reconnecte avec le bloc Connecter et reprends l'exécution.");
+        } else {
+          morphicAlert("Robot Disconnected!",
+            "Robot disconnected by WiFi!", "Please reconnect using the Connect block and unpause.");
+        }
         world.moveon = 1;
         world.children[0].stage.threads.pauseAll();
       }
@@ -681,8 +686,13 @@ async function USBconnect() {
     if (ebUSB) {
       ebUSB.connected = false; // signal disconnection to other code.
     }
-    morphicAlert("Robot Disconnected!", 
-    "Robot disconnected by USB!\nPlease reconnect using the Connect block and unpause.");
+    if (SnapTranslator.language.startsWith('fr')) {
+      morphicAlert("Robot déconnecté!",
+      "Connexion USB au robot interrompu!", "S'il te plaît reconnecte avec le bloc Connecter et reprends l'exécution.");
+    } else {
+      morphicAlert("Robot Disconnected!", 
+      "Robot disconnected by USB!", "Please reconnect using the Connect block and unpause.");
+    }
     world.moveon = 1;
     world.children[0].stage.threads.pauseAll();
   });
