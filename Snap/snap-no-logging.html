@@ -196,8 +196,10 @@
       function startAutosave() {
         var saveInterval = setInterval(function() {
             var ide = world.children[0];
-            var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
-            localStorage.setItem("snapIDE" + autosavePath(), xml);
+            if (!ide.isRunning()) {
+              var xml = ide.serializer.serialize(new Project(ide.scenes, ide.scene));
+              localStorage.setItem("snapIDE" + autosavePath(), xml);
+            }
         }, 15000);
       }
 
