@@ -174,7 +174,10 @@
         var ide = world.children[0];
         var storedProject = localStorage.getItem("snapIDE" + autosavePath());
         if (storedProject) {
-          askYesNo("Load project?", "Do you want to load the project you were working on?", 
+          var askTitle = SnapTranslator.language.startsWith('fr') ? "Chargez projet?" : "Load project?";
+          var askContent = SnapTranslator.language.startsWith('fr') ? "Voulez-vous charger le projet sur lequel vous travailliez auparavant?" :
+                                                                       "Do you want to load the project you were working on before?";
+          askYesNo(askTitle, askContent, 
           function(button) {
             // Must delay autosave until after a selection is made, otherwise empty project will be auto saved.
             if (button) {
