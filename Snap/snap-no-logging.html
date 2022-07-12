@@ -144,8 +144,20 @@
         ide.setPaletteWidth(235);
         // Only load library from github if NOT hosted
         if (!hasProjectPath()) {
-          // Load in library from github
-          fetch("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml")
+          loadRIACBlockLibraryThen(loadProject);
+        } else {
+          loadProject();
+        }
+
+        addToDemo();
+      }
+
+      // Loads the RIAC block library, then runs the callback.
+      // NOTE: runs async
+      function loadRIACBlockLibraryThen(callback) {
+        var ide = world.children[0];
+        // Load in library from github
+        fetch("https://raw.githubusercontent.com/Robot-In-A-Can/eBrain-Snap/develop/RIAC%20Blocks.xml")
           .then(response => {
             if (!response.ok) {
               throw new Error('could not fetch RIAC blocks from github');
@@ -161,13 +173,7 @@
             } else {
               alert("Cannot load RIAC library");
             }
-          }).then(loadProject);
-        } else {
-          loadProject();
-        }
-        
-
-        addToDemo();
+          }).then(callback);
       }
 
       function loadProject() {
