@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <script src="../Additional Files/RIAC Blocks.js"></script>
     <title>Snap! 7.0.1 - dev - Build Your Own Blocks</title>
       <link rel="icon" href="src/favicon.ico" type="image/x-icon">
       <link rel="manifest" href="manifest.json">
@@ -167,11 +168,17 @@
             ide.droppedText(RIAClibrary, "RIAC");
             localStorage.setItem("RIAClibrary", RIAClibrary);
           }).catch(error => {
-            console.log('cannot load library from internet. Attempting load from cache');
-            if (localStorage.getItem("RIAClibrary") !== undefined) {
+            console.log('Cannot load library from internet. Attempting load from cache');
+            if (localStorage.getItem("RIAClibrary")) {
               ide.droppedText(localStorage.getItem("RIAClibrary"), "RIAC");
             } else {
-              alert("Cannot load RIAC library");
+              // If cannot loads the blocks from github or localstorage, load from local file.
+              // This file declares a variable called "RIACBlocks" which contains the blocks.
+              if (RIACBlocks) {
+                ide.droppedText(RIACBlocks, "RIAC");
+              } else {
+                alert("Cannot load RIAC library");
+              }
             }
           }).then(callback);
       }
