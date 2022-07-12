@@ -6428,8 +6428,16 @@ IDE_Morph.prototype.setPaletteWidth = function (newWidth) {
     ));
 };
 
+// this function runs when the new project button is pressed
 IDE_Morph.prototype.createNewProject = function () {
-    this.backup(() => this.newProject());
+    this.backup(() => {
+        this.newProject()
+        // This calls a function defined in snap-no-logging.html that loads
+        // the block library for the robot
+        if (loadRIACBlockLibraryThen) {
+            loadRIACBlockLibraryThen(() => {});
+        }
+    });
 };
 
 IDE_Morph.prototype.addScene = function () {
