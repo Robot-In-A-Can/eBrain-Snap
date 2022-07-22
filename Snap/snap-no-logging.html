@@ -169,16 +169,12 @@
             localStorage.setItem("RIAClibrary", RIAClibrary);
           }).catch(error => {
             console.log('Cannot load library from internet. Attempting load from cache');
-            if (localStorage.getItem("RIAClibrary")) {
+            if (typeof RIACBlocks !== 'undefined') {
+              ide.droppedText(RIACBlocks, "RIAC");
+            } else if (localStorage.getItem("RIAClibrary")) {
               ide.droppedText(localStorage.getItem("RIAClibrary"), "RIAC");
             } else {
-              // If cannot loads the blocks from github or localstorage, load from local file.
-              // This file declares a variable called "RIACBlocks" which contains the blocks.
-              if (RIACBlocks) {
-                ide.droppedText(RIACBlocks, "RIAC");
-              } else {
-                alert("Cannot load RIAC library");
-              }
+              alert("Cannot load RIAC library");
             }
           }).then(callback);
       }
