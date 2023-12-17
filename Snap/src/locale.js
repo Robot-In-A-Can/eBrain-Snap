@@ -66,12 +66,20 @@ function Localizer(language, dict) {
     this.dict = dict || {};
 }
 
+function enableBilingualBlocks(language) {
+    const supportedLanguages = ['hi', 'fr', 'zn_CN'];
+    return supportedLanguages.includes(language);
+  }
+
 Localizer.prototype.translate = function (string) {
     var phrase = this.contextualize(string);
-    return Object.prototype.hasOwnProperty.call(
-        this.dict[this.language],
-        phrase
-    ) ? this.dict[this.language][phrase] : phrase;
+    var translation = this.dict[this.language][phrase];
+
+    if (enableBilingualBlocks(this.language)) {
+        return translation ? `${translation}\n${phrase}` : phrase;
+    }
+
+    return translation || phrase;
 };
 
 Localizer.prototype.languages = function () {
