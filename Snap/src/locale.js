@@ -76,7 +76,7 @@ Localizer.prototype.translate = function (string) {
     var translation = this.dict[this.language][phrase];
 
     if (enableBilingualBlocks(this.language)) {
-        return translation ? `${translation}\n${phrase}` : phrase;
+        return translation ? `${translation} \n ${phrase}` : phrase;
     }
 
     return translation || phrase;
